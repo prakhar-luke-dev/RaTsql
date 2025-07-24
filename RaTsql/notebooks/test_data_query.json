@@ -1,0 +1,36 @@
+[
+    {
+    "query": "Which campaign has highest CPM on Mobile phone device?",
+    "sql": "SELECT gcd.campaign_name, \n       SAFE_DIVIDE(SAFE_DIVIDE(SUM(gcdp.metrics_cost_micros), 1000000), SUM(gcdp.metrics_impressions)) * 1000 AS cpm\nFROM projectx-pipeline.dataset.google_ads_campaign_detailspostfix gcd\nJOIN projectx-pipeline.dataset.google_ads_campaign_device_performancepostfix gcdp ON gcd.campaign_id = gcdp.campaign_id\nWHERE gcd.customer_id = 3424742100\n  AND gcdp.segments_device = 'MOBILE'\nGROUP BY gcd.campaign_id, gcd.campaign_name\nORDER BY cpm DESC\nLIMIT 1",
+    "tables": [
+      "campaign_device_performance",
+      "campaign_details"
+    ],
+    "columns": [
+      "metrics_impressions",
+      "campaign_id",
+      "metrics_cost_micros",
+      "segments_device",
+      "customer_id",
+      "cpm",
+      "campaign_name"
+    ]
+  },
+  {
+    "query": "At what time did campaign \"adv_morningkick_gdn_top-ads-top-audiences3\" have the highest impression on the 1st of June ?",
+    "sql": "SELECT gcdp.segments_hour, SUM(gcdp.metrics_impressions) AS total_impressions\nFROM projectx-pipeline.dataset.google_ads_campaign_time_performancepostfix gcdp\nJOIN projectx-pipeline.dataset.google_ads_campaign_detailspostfix gcd ON gcdp.campaign_id = gcd.campaign_id\nWHERE gcd.customer_id = 3424742100\nAND gcd.campaign_name = 'adv_morningkick_gdn_top-ads-top-audiences3'\nAND gcdp.segments_date = '2025-06-01'\nGROUP BY gcdp.segments_hour\nORDER BY total_impressions DESC\nLIMIT 1",
+    "tables": [
+      "campaign_time_performance",
+      "campaign_details"
+    ],
+    "columns": [
+      "metrics_impressions",
+      "campaign_id",
+      "customer_id",
+      "segments_date",
+      "campaign_name",
+      "segments_hour",
+      "total_impressions"
+    ]
+  }
+]

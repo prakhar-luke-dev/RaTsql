@@ -1,0 +1,78 @@
+{
+  "pruned_schema": {
+    "google_ads_campaign_detailspostfix": [
+      "CAC",
+      "campaign_id",
+      "campaign_name",
+      "conversion_rate",
+      "customer_id",
+      "metrics_conversions",
+      "metrics_impressions",
+      "metrics_interactions",
+      "new_customers",
+      "segments_date",
+      "spend",
+      "total_impressions"
+    ],
+    "google_ads_campaign_performancepostfix": [
+      "campaign_id",
+      "campaign_name",
+      "conversion_rate",
+      "customer_id",
+      "metrics_conversions",
+      "metrics_impressions",
+      "metrics_interactions",
+      "segments_date",
+      "total_impressions"
+    ],
+    "google_ads_campaign_crm_performancepostfix": [
+      "CAC",
+      "campaign_id",
+      "campaign_name",
+      "customer_id",
+      "new_customers",
+      "segments_date",
+      "spend"
+    ],
+    "google_ads_ad_group_detailspostfix": [
+      "ad_group_id",
+      "ad_group_name",
+      "cost_per_conversion",
+      "customer_id",
+      "metrics_conversions",
+      "metrics_cost_micros",
+      "segments_date"
+    ],
+    "google_ads_ad_group_performancepostfix": [
+      "ad_group_id",
+      "ad_group_name",
+      "cost_per_conversion",
+      "customer_id",
+      "metrics_conversions",
+      "metrics_cost_micros",
+      "segments_date"
+    ]
+  },
+  "examples": [
+    {
+      "query": "Over the past 14 days - Which campaign had the lowest conversion rate?",
+      "sql": "SELECT gcd.campaign_name, SAFE_DIVIDE(SUM(gcp.metrics_conversions), SUM(gcp.metrics_interactions)) * 100 AS conversion_rate\nFROM projectx-pipeline.dataset.google_ads_campaign_performancepostfix gcp\nJOIN projectx-pipeline.dataset.google_ads_campaign_detailspostfix gcd \nON gcp.campaign_id = gcd.campaign_id\nWHERE gcd.customer_id = 3424742100\nAND gcp.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)\nGROUP BY gcd.campaign_id, gcd.campaign_name\nHAVING conversion_rate > 0\nORDER BY conversion_rate ASC\nLIMIT 1"
+    },
+    {
+      "query": "What is the total number of campaigns with a conversion rate above 4% in may 2025.",
+      "sql": "SELECT COUNT(*) AS total_campaigns_above_4pct_CR\nFROM (\n SELECT \n cp.campaign_id,\n SAFE_MULTIPLY(\n SAFE_DIVIDE(SUM(cp.metrics_conversions), SUM(cp.metrics_interactions)),\n 100\n ) AS conversion_rate\n FROM `projectx-pipeline.dataset.google_ads_campaign_performancepostfix` cp\n WHERE cp.customer_id = 3424742100\n AND cp.segments_date BETWEEN '2025-05-01' AND '2025-05-31'\n GROUP BY cp.campaign_id\n HAVING conversion_rate > 4\n) AS campaign_cr;"
+    },
+    {
+      "query": "Identify campaigns with CAC greater than $50 and more than 100 conversions in the last 30 days.",
+      "sql": "SELECT gcd.campaign_name, SAFE_DIVIDE(SUM(crm.spend), SUM(crm.new_customers)) AS CAC, SUM(crm.new_customers) AS total_conversions\nFROM projectx-pipeline.dataset.google_ads_campaign_crm_performancepostfix crm\nJOIN projectx-pipeline.dataset.google_ads_campaign_detailspostfix gcd ON crm.campaign_id = gcd.campaign_id\nWHERE crm.customer_id = 3424742100\nAND crm.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)\nGROUP BY gcd.campaign_id, gcd.campaign_name\nHAVING CAC > 50\nAND SUM(crm.new_customers) > 100"
+    },
+    {
+      "query": "Which campaign had the maximum impressions on 1 jan 2025?",
+      "sql": "SELECT gcd.campaign_id, gcd.campaign_name, SUM(gcp.metrics_impressions) AS total_impressions FROM projectx-pipeline.dataset.google_ads_campaign_performancepostfix gcp JOIN projectx-pipeline.dataset.google_ads_campaign_detailspostfix gcd ON gcp.campaign_id = gcd.campaign_id WHERE gcp.customer_id = 8870377244 AND gcp.segments_date = '2025-01-01' GROUP BY gcd.campaign_id, gcd.campaign_name ORDER BY total_impressions DESC LIMIT 1"
+    },
+    {
+      "query": "Which ad group had the maximum cost per conversion on 2 June 2025 ?",
+      "sql": "SELECT gag.ad_group_name, \n       SAFE_DIVIDE(SAFE_DIVIDE(SUM(ga.metrics_cost_micros), 1000000), SUM(ga.metrics_conversions)) AS cost_per_conversion\nFROM projectx-pipeline.dataset.google_ads_ad_group_performancepostfix ga\nJOIN projectx-pipeline.dataset.google_ads_ad_group_detailspostfix gag ON ga.ad_group_id = gag.ad_group_id\nWHERE ga.customer_id = 3424742100\nAND ga.segments_date = '2025-06-02'\nGROUP BY gag.ad_group_name\nORDER BY cost_per_conversion DESC\nLIMIT 1"
+    }
+  ]
+}
