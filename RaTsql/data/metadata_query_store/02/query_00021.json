@@ -1,0 +1,38 @@
+{
+  "ref_id": "query_00021",
+  "query": "Identify campaigns with CAC greater than $50 and more than 100 conversions in the last 30 days.",
+  "sql": "SELECT gcd.campaign_name, SAFE_DIVIDE(SUM(crm.spend), SUM(crm.new_customers)) AS CAC, SUM(crm.new_customers) AS total_conversions\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_crm_performance_2643649617 crm\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON crm.campaign_id = gcd.campaign_id\nWHERE crm.customer_id = 3424742100\nAND crm.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)\nGROUP BY gcd.campaign_id, gcd.campaign_name\nHAVING CAC > 50\nAND SUM(crm.new_customers) > 100",
+  "tables": [
+    "campaign_details",
+    "campaign_crm_performance"
+  ],
+  "columns": [
+    "CAC",
+    "campaign_id",
+    "campaign_name",
+    "customer_id",
+    "new_customers",
+    "segments_date",
+    "spend"
+  ],
+  "table_column_map": {
+    "campaign_details": [
+      "CAC",
+      "campaign_id",
+      "campaign_name"
+    ],
+    "campaign_crm_performance": [
+      "CAC",
+      "campaign_id",
+      "customer_id",
+      "new_customers",
+      "segments_date",
+      "spend"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Rill",
+  "instructions": "- Date Functions : \n        - Whenever previous \"X\" days are mentioned :\n            - ALWAYS excludes current day:\n            - Formula: `DATE_SUB(CURRENT_DATE(), INTERVAL X DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`\n            - Example: \"last 7 days\" = `DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`\n            - Example: \"last 14 days\" = `DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`\n  \n        - Whenever \"This month\" is mentioned:\n            - Always select from 1st to today's date:\n            - Formula: `BETWEEN DATE_TRUNC(CURRENT_DATE(), MONTH) AND CURRENT_DATE()`\n        \n        - Whenever \"Last week\" or \"previous week\" is mentioned:\n            - Always Sunday to Saturday of previous week:\n            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 WEEK) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 DAY)`\n        \n        - Whenever \"Last month\" or \"previous month\" is mentioned:\n            - Always 1st to end of previous month:\n            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 MONTH) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 DAY)`\n   \n        - Use SAFE_DIVIDE(SUM(x), SUM(y)) rather than AVG(SAFE_DIVIDE(x, y)) to compute the average order value over a date range.\n        - When no specific date or date range is defined in the question, use aggregate functions cumulative for ENTIRE date range of the data.\n        - When year is not specified, use the year {current_year} as the default year.",
+  "instructions_comment": "Assuming rill metrics and instructions are going in general instructions"
+}

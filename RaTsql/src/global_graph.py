@@ -23,7 +23,7 @@ MEMORY_CONNECTION_KWARGS: Dict = {
         "autocommit": True,
         "prepare_threshold": 0,
     }
-if POSTGRES_URI:
+if not POSTGRES_URI:
     try:
         pool = Connection.connect(POSTGRES_URI, **MEMORY_CONNECTION_KWARGS)
         checkpointer = PostgresSaver(pool)

@@ -1,0 +1,23 @@
+{
+  "ref_id": "query_00010",
+  "query": "Which ad group has the highest conversion rate in may month?",
+  "sql": "SELECT gag.ad_group_name, \n       SAFE_DIVIDE(SUM(ga.metrics_conversions), SUM(ga.metrics_interactions)) * 100 AS conversion_rate\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_performance_2643649617 ga\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON ga.ad_group_id = gag.ad_group_id\nWHERE ga.customer_id = 3424742100\n  AND EXTRACT(MONTH FROM ga.segments_date) = 5\nGROUP BY gag.ad_group_name\nORDER BY conversion_rate DESC\nLIMIT 1",
+  "tables": [
+    "ad_group_details",
+    "ad_group_performance"
+  ],
+  "columns": [
+    "segments_date",
+    "conversion_rate",
+    "metrics_conversions",
+    "customer_id",
+    "ad_group_id",
+    "metrics_interactions",
+    "ad_group_name"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Ad Group",
+  "instructions": "nan",
+  "instructions_comment": "Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. \n\nalso instructions like micros are passed in the general instructions"
+}

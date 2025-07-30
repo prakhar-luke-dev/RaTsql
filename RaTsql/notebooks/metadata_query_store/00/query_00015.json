@@ -1,0 +1,17 @@
+{
+  "ref_id": "query_00015",
+  "query": "what are the age ranges available in database?",
+  "sql": "SELECT DISTINCT ad_group_criterion_age_range_type \nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_age_range_performance_2643649617 \nWHERE customer_id = 3424742100",
+  "tables": [
+    "age_range_performance"
+  ],
+  "columns": [
+    "ad_group_criterion_age_range_type",
+    "customer_id"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Demographic",
+  "instructions": "## DEMOGRAPHICS ANALYSIS :\n    - Refer the below mentioned database tables when the user asks about demographics related information:\n        - Age Range specific performance information = google_ads_age_range_performance_2643649617\n        - Gender specific performance information = google_ads_gender_performance_2643649617\n        - Income specific performance information = google_ads_income_range_performance_2643649617\n        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617\n    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements\n    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.",
+  "instructions_comment": "nan"
+}

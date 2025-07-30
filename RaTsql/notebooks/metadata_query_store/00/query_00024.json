@@ -1,0 +1,17 @@
+{
+  "ref_id": "query_00024",
+  "query": "how many landing pages are running in this account?",
+  "sql": "SELECT COUNT(DISTINCT glp.landing_page_view_unexpanded_final_url) \nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_landing_page_performance_2643649617 glp\nWHERE glp.customer_id = 3424742100",
+  "tables": [
+    "landing_page_performance"
+  ],
+  "columns": [
+    "landing_page_view_unexpanded_final_url",
+    "customer_id"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Landing Pages",
+  "instructions": "Landing pages url should be clubbed on the basis of url. For example: same url in diffrent campaign should be considered as same.",
+  "instructions_comment": "nan"
+}

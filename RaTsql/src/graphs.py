@@ -15,7 +15,14 @@ from utils import save_graph_to_file
 
 
 #===========================================================================
-#                            HEAD GRAPH
+#                                 HEAD GRAPH
+#===========================================================================
+#  *                                 INFO
+#  
+#  Aim of this graph is to generate pruned schema from RAG or full approach.  
+#  1. RAG Approach : Get pruned schema from similar queries.
+#  2. Full Approach : Get pruned schema from LLM by passing full schema.  
+# 
 #===========================================================================
 
 def build_head_graph():
@@ -30,11 +37,22 @@ def build_head_graph():
     head.add_edge(START, "user_question")
 
     head_graph = head.compile(checkpointer=True)
+
     return head_graph
 
 
 #===========================================================================
-#                            BODY GRAPH
+#                                 BODY GRAPH
+#===========================================================================
+#  *                                 INFO
+#  Aim of this graph is to generate 3 different SQL queries.  
+#  1. SQL1 = full schema + user question + pruned schema + other info
+#  2. dense_schema = schema from SQL1 union pruned schema + other info
+#  3. Hints = dense_schema + user_question + other info
+#  4. SQL2 = dense_schema + hints + user_question + other info
+#  5. SQL3 = SQL1 + result1 + SQL2 + result2 + user_question + other info
+#  6. loop_sql3 till n times
+# 
 #===========================================================================
 
 def build_body_graph():
@@ -45,6 +63,7 @@ def build_body_graph():
     body.add_node("dense_schema", dense_schema)
     body.add_node("gen_hints", gen_hints)
     body.add_node("gen_sql2", gen_sql2)
+    body.add_node("execute_2sql", get_result_from_both_queries)
     body.add_node("gen_sql3", gen_sql3)
     body.add_node("loop_sql", loop_sql)
     body.add_node("final_answer", final_answer)
@@ -52,12 +71,20 @@ def build_body_graph():
     body.add_edge(START, "gen_sql1")
 
     body_graph = body.compile(checkpointer=True)
+
     return body_graph
 
 
 
 #===========================================================================
-#                            TAIL GRAPH
+#                                 TAIL GRAPH
+#===========================================================================
+#  *                                 INFO
+#  Aim of this graph is to populate RAG with the positve feedback and send
+#  negative to the developer to tune the approach.
+#    
+#    
+# 
 #===========================================================================
 
 def build_tail_graph():

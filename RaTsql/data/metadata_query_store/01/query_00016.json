@@ -1,0 +1,45 @@
+{
+  "ref_id": "query_00016",
+  "query": "Provide a breakdown in terms of gender eCPA for this campaign - adv-morningkick-branded-search",
+  "sql": "SELECT ggp.ad_group_criterion_gender_type AS gender, SAFE_DIVIDE(SAFE_DIVIDE(SUM(ggp.metrics_cost_micros), 1000000), SUM(ggp.metrics_conversions)) AS eCPA\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_gender_performance_2643649617 ggp\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON ggp.ad_group_id = gag.ad_group_id\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gag.campaign_id = gcd.campaign_id\nWHERE ggp.customer_id = 3424742100\nAND gcd.campaign_name = 'adv-morningkick-branded-search'\nGROUP BY ggp.ad_group_criterion_gender_type\nORDER BY eCPA ASC",
+  "tables": [
+    "gender_performance",
+    "ad_group_details",
+    "campaign_details"
+  ],
+  "columns": [
+    "ad_group_criterion_gender_type",
+    "ad_group_id",
+    "campaign_id",
+    "campaign_name",
+    "customer_id",
+    "eCPA",
+    "metrics_conversions",
+    "metrics_cost_micros"
+  ],
+  "table_column_map": {
+    "gender_performance": [
+      "ad_group_criterion_gender_type",
+      "ad_group_id",
+      "customer_id",
+      "eCPA",
+      "metrics_conversions",
+      "metrics_cost_micros"
+    ],
+    "ad_group_details": [
+      "ad_group_id",
+      "campaign_id",
+      "eCPA"
+    ],
+    "campaign_details": [
+      "campaign_id",
+      "campaign_name",
+      "eCPA"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Demographic",
+  "instructions": "## DEMOGRAPHICS ANALYSIS :\n    - Refer the below mentioned database tables when the user asks about demographics related information:\n        - Age Range specific performance information = google_ads_age_range_performance_2643649617\n        - Gender specific performance information = google_ads_gender_performance_2643649617\n        - Income specific performance information = google_ads_income_range_performance_2643649617\n        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617\n    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements\n    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.",
+  "instructions_comment": "\"Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. \n\nalso instructions like micros are passed in the general instructions\""
+}

@@ -9,14 +9,13 @@
 from langfuse import Langfuse, get_client
 from langfuse.langchain import CallbackHandler
 from global_graph import get_global_graph
-from dotenv import load_dotenv, find_dotenv
-import os
-
-load_dotenv(find_dotenv(), override=True)
-LANGFUSE_SECRET_KEY = str(os.getenv("LANGFUSE_SECRET_KEY"))
-LANGFUSE_PUBLIC_KEY = str(os.getenv("LANGFUSE_PUBLIC_KEY"))
-LANGFUSE_HOST = os.getenv("LANGFUSE_HOST")
-
+from config import (
+    LANGFUSE_PUBLIC_KEY,
+    LANGFUSE_SECRET_KEY,
+    LANGFUSE_HOST,
+    DEEPINFRA_API_TOKEN
+)
+from utils import save_graph_to_file
 Langfuse(
     public_key=LANGFUSE_PUBLIC_KEY,
     secret_key=LANGFUSE_SECRET_KEY,
@@ -30,24 +29,25 @@ langfuse_handler = CallbackHandler()
 ratsql = get_global_graph()
 
 user_config = {
-    "configurable": {"thread_id": "rat_04"},
+    "configurable": {"thread_id": "saint_luke"},
     "callbacks": [langfuse_handler],
-    "session_id": "04",
-    "user_id": "rat",
+    "session_id": "preach002",
+    "user_id": "luke",
 }
 # Set trace attributes dynamically via enclosing span
 with langfuse.start_as_current_span(
     name="RaTsql-graph",
 ) as span:
     span.update_trace(
-        user_id="rat",
-        session_id="04",
-        tags=["testing"],
+        user_id="saint_luke",
+        session_id="preach001",
+        tags=["preaching"],
     )
     ratsql.invoke(
             {
                 "messages": [("user", "hi testing")],
-                "data_query": "dummy data query",
+                "data_query": "Which campaign had the maximum impressions on 1 jan 2025?",
             },
             config=user_config
     )
+

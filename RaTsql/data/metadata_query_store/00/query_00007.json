@@ -1,0 +1,33 @@
+{
+  "ref_id": "query_00007",
+  "query": "How many conversions have been generated from google display network on 6 Feb 2025 ?",
+  "sql": "SELECT SUM(gcp.metrics_conversions) AS total_conversions \nFROM `advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617` gcp \nJOIN `advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617` gcd \nON gcp.campaign_id = gcd.campaign_id \nWHERE gcp.customer_id = 3424742100 \nAND gcp.segments_date = '2025-02-06' \nAND gcd.campaign_advertising_channel_type = 'DISPLAY'",
+  "tables": [
+    "campaign_performance",
+    "campaign_details"
+  ],
+  "columns": [
+    "campaign_advertising_channel_type",
+    "campaign_id",
+    "customer_id",
+    "metrics_conversions",
+    "segments_date"
+  ],
+  "table_column_map": {
+    "campaign_performance": [
+      "campaign_id",
+      "customer_id",
+      "metrics_conversions",
+      "segments_date"
+    ],
+    "campaign_details": [
+      "campaign_advertising_channel_type",
+      "campaign_id"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Campaign",
+  "instructions": "nan",
+  "instructions_comment": "nan"
+}

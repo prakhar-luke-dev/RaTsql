@@ -1,0 +1,20 @@
+{
+  "ref_id": "query_00002",
+  "query": "How many total conversions did the account have on 23 feb 2025?",
+  "sql": "SELECT SUM(cp.metrics_conversions) AS total_conversions\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 cp\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 c ON cp.campaign_id = c.campaign_id\nWHERE c.customer_id = 3424742100\nAND cp.segments_date = '2025-02-23'",
+  "tables": [
+    "campaign_performance",
+    "campaign_details"
+  ],
+  "columns": [
+    "metrics_conversions",
+    "campaign_id",
+    "segments_date",
+    "customer_id"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Account",
+  "instructions": "nan",
+  "instructions_comment": "nan"
+}

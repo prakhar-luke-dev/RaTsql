@@ -1,0 +1,52 @@
+[
+  {
+    "ref_id": "query_00000",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00000.json",
+    "query": "Which campaign had the maximum impressions on 1 jan 2025?"
+  },
+  {
+    "ref_id": "query_00001",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00001.json",
+    "query": "What is the total number of campaigns with a conversion rate above 4% in may 2025."
+  },
+  {
+    "ref_id": "query_00002",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00002.json",
+    "query": "How many total conversions did the account have on 23 feb 2025?"
+  },
+  {
+    "ref_id": "query_00003",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00003.json",
+    "query": "what are the best performing hours of the day for this account across all the different campaigns?"
+  },
+  {
+    "ref_id": "query_00004",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00004.json",
+    "query": "What was the type, name, cost and budget of the campaign with maximum clicks on 6 Jan 2025?"
+  },
+  {
+    "ref_id": "query_00005",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00005.json",
+    "query": "Over the past 14 days - Which campaign had the lowest conversion rate?"
+  },
+  {
+    "ref_id": "query_00006",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00006.json",
+    "query": "Which Campaign has the maximum views on 15-jan-2025?"
+  },
+  {
+    "ref_id": "query_00007",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00007.json",
+    "query": "How many conversions have been generated from google display network on 6 Feb 2025 ?"
+  },
+  {
+    "ref_id": "query_00008",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00008.json",
+    "query": "List top 5 ad groups which has highest clicks"
+  },
+  {
+    "ref_id": "query_00009",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/00/query_00009.json",
+    "query": "Which ad group had the maximum cost per conversion on 2 June 2025 ?"
+  }
+]

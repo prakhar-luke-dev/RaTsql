@@ -1,0 +1,27 @@
+{
+  "ref_id": "query_00014",
+  "query": "What is the total clicks of age above 65+ in date between 13 mar to 23 may 25?",
+  "sql": "SELECT SUM(gar.metrics_clicks) AS total_clicks \nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_age_range_performance_2643649617 gar \nWHERE gar.customer_id = 3424742100 AND gar.segments_date BETWEEN '2025-03-13' AND '2025-05-23' \nAND gar.ad_group_criterion_age_range_type = 'AGE_RANGE_65_UP'",
+  "tables": [
+    "age_range_performance"
+  ],
+  "columns": [
+    "ad_group_criterion_age_range_type",
+    "customer_id",
+    "metrics_clicks",
+    "segments_date"
+  ],
+  "table_column_map": {
+    "age_range_performance": [
+      "ad_group_criterion_age_range_type",
+      "customer_id",
+      "metrics_clicks",
+      "segments_date"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Demographic",
+  "instructions": "## DEMOGRAPHICS ANALYSIS :\n    - Refer the below mentioned database tables when the user asks about demographics related information:\n        - Age Range specific performance information = google_ads_age_range_performance_2643649617\n        - Gender specific performance information = google_ads_gender_performance_2643649617\n        - Income specific performance information = google_ads_income_range_performance_2643649617\n        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617\n    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements\n    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.",
+  "instructions_comment": "nan"
+}

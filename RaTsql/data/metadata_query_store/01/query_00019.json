@@ -1,0 +1,40 @@
+{
+  "ref_id": "query_00019",
+  "query": "Can you list all the search keywords running in order by the ones that have the most conversions and include their cost per conversion?",
+  "sql": "SELECT gkp.ad_group_criterion_keyword_text AS keyword, \ngkp.ad_group_criterion_keyword_match_type AS match_type, \nSUM(gkp.metrics_conversions) AS total_conversions, \nSAFE_DIVIDE(SAFE_DIVIDE(SUM(gkp.metrics_cost_micros), 1000000), SUM(gkp.metrics_conversions)) AS cost_per_conversion\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_keyword_performance_2643649617 AS gkp\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 cd ON gkp.campaign_id = cd.campaign_id\nWHERE gkp.customer_id = 3424742100\n  AND cd.campaign_advertising_channel_type = 'SEARCH'\nGROUP BY gkp.ad_group_criterion_keyword_text, gkp.ad_group_criterion_keyword_match_type\nORDER BY total_conversions DESC",
+  "tables": [
+    "keyword_performance",
+    "campaign_details"
+  ],
+  "columns": [
+    "ad_group_criterion_keyword_match_type",
+    "ad_group_criterion_keyword_text",
+    "campaign_advertising_channel_type",
+    "campaign_id",
+    "customer_id",
+    "metrics_conversions",
+    "metrics_cost_micros",
+    "total_conversions"
+  ],
+  "table_column_map": {
+    "keyword_performance": [
+      "ad_group_criterion_keyword_match_type",
+      "ad_group_criterion_keyword_text",
+      "campaign_id",
+      "customer_id",
+      "metrics_conversions",
+      "metrics_cost_micros",
+      "total_conversions"
+    ],
+    "campaign_details": [
+      "campaign_advertising_channel_type",
+      "campaign_id",
+      "total_conversions"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Keyword",
+  "instructions": "Club the same text keywords. 'Group by' should only be on keyword text and keyword match type.",
+  "instructions_comment": "\"Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. \n\nalso instructions like micros are passed in the general instructions\""
+}

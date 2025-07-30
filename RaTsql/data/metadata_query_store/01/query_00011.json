@@ -1,0 +1,47 @@
+{
+  "ref_id": "query_00011",
+  "query": "Which campaign and ad group had maximum female impressions on 29 dec 2024?",
+  "sql": "SELECT gcd.campaign_name, gag.ad_group_name, SUM(ggp.metrics_impressions) AS total_impressions\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_gender_performance_2643649617 ggp\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON ggp.ad_group_id = gag.ad_group_id\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gag.campaign_id = gcd.campaign_id\nWHERE ggp.customer_id = 3424742100\nAND ggp.ad_group_criterion_gender_type = 'FEMALE'\nAND ggp.segments_date = '2024-12-29'\nGROUP BY gcd.campaign_name, gag.ad_group_name\nORDER BY total_impressions DESC\nLIMIT 1",
+  "tables": [
+    "campaign_details",
+    "ad_group_details",
+    "gender_performance"
+  ],
+  "columns": [
+    "ad_group_criterion_gender_type",
+    "ad_group_id",
+    "ad_group_name",
+    "campaign_id",
+    "campaign_name",
+    "customer_id",
+    "metrics_impressions",
+    "segments_date",
+    "total_impressions"
+  ],
+  "table_column_map": {
+    "campaign_details": [
+      "campaign_id",
+      "campaign_name",
+      "total_impressions"
+    ],
+    "ad_group_details": [
+      "ad_group_id",
+      "ad_group_name",
+      "campaign_id",
+      "total_impressions"
+    ],
+    "gender_performance": [
+      "ad_group_criterion_gender_type",
+      "ad_group_id",
+      "customer_id",
+      "metrics_impressions",
+      "segments_date",
+      "total_impressions"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Ad Group, Demographic",
+  "instructions": "## DEMOGRAPHICS ANALYSIS :\n    - Refer the below mentioned database tables when the user asks about demographics related information:\n        - Age Range specific performance information = google_ads_age_range_performance_2643649617\n        - Gender specific performance information = google_ads_gender_performance_2643649617\n        - Income specific performance information = google_ads_income_range_performance_2643649617\n        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617\n    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements\n    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.",
+  "instructions_comment": "nan"
+}

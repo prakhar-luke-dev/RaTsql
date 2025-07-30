@@ -1,0 +1,445 @@
+S No.,Owner,Questions,Brand id,Brand Name,Category,Ground truth sql,Instructions,Instructions comment,Query 1,Query 2,Query 3,Query 4,Query 5,Final query data,Ground truth data,Check,Explanation
+1,Mayank,Which campaign had the maximum impressions on 1 jan 2025?,8870377244,Gundry MD - Branded,Campaign,"SELECT gcd.campaign_id, gcd.campaign_name, SUM(gcp.metrics_impressions) AS total_impressions FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 gcp JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gcp.campaign_id = gcd.campaign_id WHERE gcp.customer_id = 8870377244 AND gcp.segments_date = '2025-01-01' GROUP BY gcd.campaign_id, gcd.campaign_name ORDER BY total_impressions DESC LIMIT 1",N/A,,,,,,,,,,
+2,Mayank,What is the total number of campaigns with a conversion rate above 4% in may 2025.,3424742100,Morning Kick - Roundhouse,Campaign,"SELECT COUNT(*) AS total_campaigns_above_4pct_CR
+FROM (
+ SELECT 
+ cp.campaign_id,
+ SAFE_MULTIPLY(
+ SAFE_DIVIDE(SUM(cp.metrics_conversions), SUM(cp.metrics_interactions)),
+ 100
+ ) AS conversion_rate
+ FROM `advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617` cp
+ WHERE cp.customer_id = 3424742100
+ AND cp.segments_date BETWEEN '2025-05-01' AND '2025-05-31'
+ GROUP BY cp.campaign_id
+ HAVING conversion_rate > 4
+) AS campaign_cr;",N/A,"Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. 
+
+also instructions like micros are passed in the general instructions",,,,,,,,,
+3,Anshika,How many total conversions did the account have on 23 feb 2025?,3424742100,Morning Kick - Roundhouse,Account,"SELECT SUM(cp.metrics_conversions) AS total_conversions
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 cp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 c ON cp.campaign_id = c.campaign_id
+WHERE c.customer_id = 3424742100
+AND cp.segments_date = '2025-02-23'",N/A,,,,,,,,,,
+4,Anshika,what are the best performing hours of the day for this account across all the different campaigns?,3424742100,Morning Kick - Roundhouse,"Account, Dayparting","SELECT gcdp.segments_hour, SUM(gcdp.metrics_conversions) AS total_conversions, SAFE_DIVIDE(SUM(gcdp.metrics_cost_micros), 1000000) AS total_cost
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_time_performance_2643649617 gcdp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gcdp.campaign_id = gcd.campaign_id
+WHERE gcd.customer_id = 3424742100
+GROUP BY gcdp.segments_hour
+ORDER BY total_conversions DESC, total_cost ASC
+LIMIT 10","## PERFORMANCE ANALYSIS GUIDELINES :
+    - Primary Metrics to Use for Performance Evaluation (Any Entity):
+        - Priority 1 : Conversions (higher is better)
+        - Priority 2 (tie-breaker) : Spend (lower is better)
+        - Note : 
+            - Always show eCPA in the final output if the question is about profitability or success or performance or such
+            - Do not use eCPA as a metric for ranking.
+            - 3 things should be present in the final output: 
+                - total_conversions
+                - total_cost
+                - eCPA
+
+    - Top/Best Performing or ""Most Profitable"" Entities :
+        - Priority 1 : Rank by highest total_conversions (descending)
+        - Priority 2 (tie-breaker) : Use lowest total_cost (ascending)
+
+    - Worst/Least Performing/Profitable Entities :
+        - Priority 1 : Include all entities — including those with zero or null conversions
+        - Priority 2 (tie-breaker) : Rank by lowest total_conversions (ascending)
+        - Priority 3 (final tie-breaker) : Use highest total_cost (descending)
+
+
+- Time of day analysis: use {table_prefix}.google_ads_campaign_time_performance_2643649617",,,,,,,,,,
+5,Anshika,"What was the type, name, cost and budget of the campaign with maximum clicks on 6 Jan 2025?",3424742100,Morning Kick - Roundhouse,Campaign,"SELECT gc.campaign_advertising_channel_type, gc.campaign_name, SAFE_DIVIDE(SUM(gcp.metrics_cost_micros), 1000000) AS cost, SUM(gcp.metrics_clicks) AS clicks, SAFE_DIVIDE(gc.campaign_budget_amount_micros, 1000000) AS budget
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gc 
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 gcp ON gc.campaign_id = gcp.campaign_id
+WHERE gc.customer_id = 3424742100 
+  AND gcp.segments_date = '2025-01-06' 
+GROUP BY gc.campaign_id, gc.campaign_name, gc.campaign_advertising_channel_type, gc.campaign_budget_amount_micros
+ORDER BY clicks DESC 
+LIMIT 1",NA,,,,,,,,,,
+6,Anshika,Over the past 14 days - Which campaign had the lowest conversion rate?,3424742100,Morning Kick - Roundhouse,Campaign,"SELECT gcd.campaign_name, SAFE_DIVIDE(SUM(gcp.metrics_conversions), SUM(gcp.metrics_interactions)) * 100 AS conversion_rate
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 gcp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd 
+ON gcp.campaign_id = gcd.campaign_id
+WHERE gcd.customer_id = 3424742100
+AND gcp.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+GROUP BY gcd.campaign_id, gcd.campaign_name
+HAVING conversion_rate > 0
+ORDER BY conversion_rate ASC
+LIMIT 1"," Date Functions : 
+        - Whenever previous ""X"" days are mentioned :
+            - ALWAYS excludes current day:
+            - Formula: `DATE_SUB(CURRENT_DATE(), INTERVAL X DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 7 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 14 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+  
+        - Whenever ""This month"" is mentioned:
+            - Always select from 1st to today's date:
+            - Formula: `BETWEEN DATE_TRUNC(CURRENT_DATE(), MONTH) AND CURRENT_DATE()`
+        
+        - Whenever ""Last week"" or ""previous week"" is mentioned:
+            - Always Sunday to Saturday of previous week:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 WEEK) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 DAY)`
+        
+        - Whenever ""Last month"" or ""previous month"" is mentioned:
+            - Always 1st to end of previous month:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 MONTH) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 DAY)`
+   
+        - Use SAFE_DIVIDE(SUM(x), SUM(y)) rather than AVG(SAFE_DIVIDE(x, y)) to compute the average order value over a date range.
+        - When no specific date or date range is defined in the question, use aggregate functions cumulative for ENTIRE date range of the data.
+        - When year is not specified, use the year {current_year} as the default year.
+
+
+
+## PERFORMANCE ANALYSIS GUIDELINES :
+    - Primary Metrics to Use for Performance Evaluation (Any Entity):
+        - Priority 1 : Conversions (higher is better)
+        - Priority 2 (tie-breaker) : Spend (lower is better)
+        - Note : 
+            - Always show eCPA in the final output if the question is about profitability or success or performance or such
+            - Do not use eCPA as a metric for ranking.
+            - 3 things should be present in the final output: 
+                - total_conversions
+                - total_cost
+                - eCPA
+
+    - Top/Best Performing or ""Most Profitable"" Entities :
+        - Priority 1 : Rank by highest total_conversions (descending)
+        - Priority 2 (tie-breaker) : Use lowest total_cost (ascending)
+
+    - Worst/Least Performing/Profitable Entities :
+        - Priority 1 : Include all entities — including those with zero or null conversions
+        - Priority 2 (tie-breaker) : Rank by lowest total_conversions (ascending)
+        - Priority 3 (final tie-breaker) : Use highest total_cost (descending)",,,,,,,,,,
+7,Anshika,Which Campaign has the maximum views on 15-jan-2025?,3424742100,Morning Kick - Roundhouse,Campaign,"SELECT gcd.campaign_name, SUM(gcp.metrics_video_views) AS total_views 
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 gcp 
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gcp.campaign_id = gcd.campaign_id 
+WHERE gcd.customer_id = 3424742100 
+AND gcp.segments_date = '2025-01-15' 
+GROUP BY gcd.campaign_id, gcd.campaign_name 
+ORDER BY total_views DESC 
+LIMIT 1",N/A,,,,,,,,,,
+8,Anshika,How many conversions have been generated from google display network on 6 Feb 2025 ?,3424742100,Morning Kick - Roundhouse,Campaign,"SELECT SUM(gcp.metrics_conversions) AS total_conversions 
+FROM `advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617` gcp 
+JOIN `advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617` gcd 
+ON gcp.campaign_id = gcd.campaign_id 
+WHERE gcp.customer_id = 3424742100 
+AND gcp.segments_date = '2025-02-06' 
+AND gcd.campaign_advertising_channel_type = 'DISPLAY'",N/A,,,,,,,,,,
+9,Anshika,List top 5 ad groups which has highest clicks,3424742100,Morning Kick - Roundhouse,Ad Group,"SELECT gag.ad_group_name, SUM(gap.metrics_clicks) AS total_clicks
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_performance_2643649617 gap
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON gap.ad_group_id = gag.ad_group_id
+WHERE gap.customer_id = 3424742100
+GROUP BY gag.ad_group_id, gag.ad_group_name
+ORDER BY total_clicks DESC
+LIMIT 5",N/A,,,,,,,,,,
+10,Anshika,Which ad group had the maximum cost per conversion on 2 June 2025 ?,3424742100,Morning Kick - Roundhouse,Ad Group,"SELECT gag.ad_group_name, 
+       SAFE_DIVIDE(SAFE_DIVIDE(SUM(ga.metrics_cost_micros), 1000000), SUM(ga.metrics_conversions)) AS cost_per_conversion
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_performance_2643649617 ga
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON ga.ad_group_id = gag.ad_group_id
+WHERE ga.customer_id = 3424742100
+AND ga.segments_date = '2025-06-02'
+GROUP BY gag.ad_group_name
+ORDER BY cost_per_conversion DESC
+LIMIT 1",,"Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. 
+
+also instructions like micros are passed in the general instructions",,,,,,,,,
+11,Anshika,Which ad group has the highest conversion rate in may month?,3424742100,Morning Kick - Roundhouse,Ad Group,"SELECT gag.ad_group_name, 
+       SAFE_DIVIDE(SUM(ga.metrics_conversions), SUM(ga.metrics_interactions)) * 100 AS conversion_rate
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_performance_2643649617 ga
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON ga.ad_group_id = gag.ad_group_id
+WHERE ga.customer_id = 3424742100
+  AND EXTRACT(MONTH FROM ga.segments_date) = 5
+GROUP BY gag.ad_group_name
+ORDER BY conversion_rate DESC
+LIMIT 1",,"Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. 
+
+also instructions like micros are passed in the general instructions",,,,,,,,,
+12,Anshika,Which campaign and ad group had maximum female impressions on 29 dec 2024?,3424742100,Morning Kick - Roundhouse,"Ad Group, Demographic","SELECT gcd.campaign_name, gag.ad_group_name, SUM(ggp.metrics_impressions) AS total_impressions
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_gender_performance_2643649617 ggp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON ggp.ad_group_id = gag.ad_group_id
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gag.campaign_id = gcd.campaign_id
+WHERE ggp.customer_id = 3424742100
+AND ggp.ad_group_criterion_gender_type = 'FEMALE'
+AND ggp.segments_date = '2024-12-29'
+GROUP BY gcd.campaign_name, gag.ad_group_name
+ORDER BY total_impressions DESC
+LIMIT 1","## DEMOGRAPHICS ANALYSIS :
+    - Refer the below mentioned database tables when the user asks about demographics related information:
+        - Age Range specific performance information = google_ads_age_range_performance_2643649617
+        - Gender specific performance information = google_ads_gender_performance_2643649617
+        - Income specific performance information = google_ads_income_range_performance_2643649617
+        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617
+    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements
+    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.
+ ",,,,,,,,,,
+13,Anshika,How many ads had over 1000 clicks on 3 april 2025?,3424742100,Morning Kick - Roundhouse,Ad,"SELECT COUNT(DISTINCT ga.ad_group_ad_ad_id) 
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_performance_2643649617 ga 
+WHERE ga.customer_id = 3424742100 
+AND ga.segments_date = '2025-04-03' 
+AND ga.metrics_clicks > 1000",,,,,,,,,,,
+14,Anshika,how many disapproved ads does this account have over the past 90 days?,3424742100,Morning Kick - Roundhouse,Ad,"SELECT COUNT(DISTINCT ga.ad_group_ad_ad_id) 
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_details_2643649617 ga
+WHERE ga.customer_id = 3424742100
+AND ga.ad_group_ad_policy_summary_approval_status = 'DISAPPROVED'
+AND ga.ad_group_ad_ad_id IN (
+  SELECT ad_group_ad_ad_id 
+  FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_performance_2643649617
+  WHERE customer_id = 3424742100
+  AND segments_date >= DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)
+)",,,,,,,,,,,
+15,Anshika,What is the total clicks of age above 65+ in date between 13 mar to 23 may 25?,3424742100,Morning Kick - Roundhouse,Demographic,"SELECT SUM(gar.metrics_clicks) AS total_clicks 
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_age_range_performance_2643649617 gar 
+WHERE gar.customer_id = 3424742100 AND gar.segments_date BETWEEN '2025-03-13' AND '2025-05-23' 
+AND gar.ad_group_criterion_age_range_type = 'AGE_RANGE_65_UP'","## DEMOGRAPHICS ANALYSIS :
+    - Refer the below mentioned database tables when the user asks about demographics related information:
+        - Age Range specific performance information = google_ads_age_range_performance_2643649617
+        - Gender specific performance information = google_ads_gender_performance_2643649617
+        - Income specific performance information = google_ads_income_range_performance_2643649617
+        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617
+    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements
+    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.
+   ",,,,,,,,,,
+16,Anshika,what are the age ranges available in database?,3424742100,Morning Kick - Roundhouse,Demographic,"SELECT DISTINCT ad_group_criterion_age_range_type 
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_age_range_performance_2643649617 
+WHERE customer_id = 3424742100","## DEMOGRAPHICS ANALYSIS :
+    - Refer the below mentioned database tables when the user asks about demographics related information:
+        - Age Range specific performance information = google_ads_age_range_performance_2643649617
+        - Gender specific performance information = google_ads_gender_performance_2643649617
+        - Income specific performance information = google_ads_income_range_performance_2643649617
+        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617
+    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements
+    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.
+   ",,,,,,,,,,
+17,Anshika,Provide a breakdown in terms of gender eCPA for this campaign - adv-morningkick-branded-search,3424742100,Morning Kick - Roundhouse,Demographic,"SELECT ggp.ad_group_criterion_gender_type AS gender, SAFE_DIVIDE(SAFE_DIVIDE(SUM(ggp.metrics_cost_micros), 1000000), SUM(ggp.metrics_conversions)) AS eCPA
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_gender_performance_2643649617 ggp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON ggp.ad_group_id = gag.ad_group_id
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gag.campaign_id = gcd.campaign_id
+WHERE ggp.customer_id = 3424742100
+AND gcd.campaign_name = 'adv-morningkick-branded-search'
+GROUP BY ggp.ad_group_criterion_gender_type
+ORDER BY eCPA ASC","## DEMOGRAPHICS ANALYSIS :
+    - Refer the below mentioned database tables when the user asks about demographics related information:
+        - Age Range specific performance information = google_ads_age_range_performance_2643649617
+        - Gender specific performance information = google_ads_gender_performance_2643649617
+        - Income specific performance information = google_ads_income_range_performance_2643649617
+        - Parental Status specific performance information = google_ads_parental_status_performance_2643649617
+    - When the user asks about demographic related information, create 4 different sql queries specific to the above mentioned 4 database tables as per user requirements
+    - If the query is specific to a single category, like age range/gender, refer to the above mentioned specific database table.
+   
+
+
+","""Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. 
+
+also instructions like micros are passed in the general instructions""",,,,,,,,,
+18,Anshika,What was the most profitable keyword in adv-morningkick-nonbranded-energy campaign?,3424742100,Morning Kick - Roundhouse,Keyword,"SELECT gkp.ad_group_criterion_keyword_text AS keyword, 
+  SUM(gkp.metrics_conversions) AS total_conversions, 
+  SAFE_DIVIDE(SUM(gkp.metrics_cost_micros), 1000000) AS total_cost, 
+  SAFE_DIVIDE(SUM(gkp.metrics_conversions), SUM(gkp.metrics_interactions)) * 100 AS conversion_rate,
+  SAFE_DIVIDE(SAFE_DIVIDE(SUM(gkp.metrics_cost_micros), 1000000), SUM(gkp.metrics_conversions)) AS eCPA
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_keyword_performance_2643649617 gkp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON gkp.ad_group_id = gag.ad_group_id
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gag.campaign_id = gcd.campaign_id
+WHERE gkp.customer_id = 3424742100 
+  AND gcd.campaign_name = 'adv-morningkick-nonbranded-energy'
+GROUP BY gkp.ad_group_criterion_keyword_text
+ORDER BY total_conversions DESC, total_cost ASC
+LIMIT 1;","## PERFORMANCE ANALYSIS GUIDELINES :
+    - Primary Metrics to Use for Performance Evaluation (Any Entity):
+        - Priority 1 : Conversions (higher is better)
+        - Priority 2 (tie-breaker) : Spend (lower is better)
+        - Note : 
+            - Always show eCPA in the final output if the question is about profitability or success or performance or such
+            - Do not use eCPA as a metric for ranking.
+            - 3 things should be present in the final output: 
+                - total_conversions
+                - total_cost
+                - eCPA
+
+    - Top/Best Performing or ""Most Profitable"" Entities :
+        - Priority 1 : Rank by highest total_conversions (descending)
+        - Priority 2 (tie-breaker) : Use lowest total_cost (ascending)
+
+    - Worst/Least Performing/Profitable Entities :
+        - Priority 1 : Include all entities — including those with zero or null conversions
+        - Priority 2 (tie-breaker) : Rank by lowest total_conversions (ascending)
+        - Priority 3 (final tie-breaker) : Use highest total_cost (descending)
+
+
+
+",,,,,,,,,,
+19,Anshika,Which keywords have received the most impressions over the past 30 days?,3424742100,Morning Kick - Roundhouse,Keyword,"SELECT gkp.ad_group_criterion_keyword_text AS keyword, gkp.ad_group_criterion_keyword_match_type AS match_type, SUM(gkp.metrics_impressions) AS total_impressions 
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_keyword_performance_2643649617 gkp 
+WHERE gkp.customer_id = 3424742100 
+AND gkp.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) 
+GROUP BY gkp.ad_group_criterion_keyword_text, gkp.ad_group_criterion_keyword_match_type 
+ORDER BY total_impressions DESC 
+LIMIT 10"," - Date Functions : 
+        - Whenever previous ""X"" days are mentioned :
+            - ALWAYS excludes current day:
+            - Formula: `DATE_SUB(CURRENT_DATE(), INTERVAL X DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 7 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 14 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+  
+        - Whenever ""This month"" is mentioned:
+            - Always select from 1st to today's date:
+            - Formula: `BETWEEN DATE_TRUNC(CURRENT_DATE(), MONTH) AND CURRENT_DATE()`
+        
+        - Whenever ""Last week"" or ""previous week"" is mentioned:
+            - Always Sunday to Saturday of previous week:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 WEEK) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 DAY)`
+        
+        - Whenever ""Last month"" or ""previous month"" is mentioned:
+            - Always 1st to end of previous month:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 MONTH) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 DAY)`
+   
+        - Use SAFE_DIVIDE(SUM(x), SUM(y)) rather than AVG(SAFE_DIVIDE(x, y)) to compute the average order value over a date range.
+        - When no specific date or date range is defined in the question, use aggregate functions cumulative for ENTIRE date range of the data.
+        - When year is not specified, use the year {current_year} as the default year.
+
+
+
+Club the same text keywords. 'Group by' should only be on keyword text and keyword match type.",Assuming schema details are going in the gneral instructions along with the instructions in the fewshots,,,,,,,,,
+20,Anshika,Can you list all the search keywords running in order by the ones that have the most conversions and include their cost per conversion?,3424742100,Morning Kick - Roundhouse,Keyword,"SELECT gkp.ad_group_criterion_keyword_text AS keyword, 
+gkp.ad_group_criterion_keyword_match_type AS match_type, 
+SUM(gkp.metrics_conversions) AS total_conversions, 
+SAFE_DIVIDE(SAFE_DIVIDE(SUM(gkp.metrics_cost_micros), 1000000), SUM(gkp.metrics_conversions)) AS cost_per_conversion
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_keyword_performance_2643649617 AS gkp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 cd ON gkp.campaign_id = cd.campaign_id
+WHERE gkp.customer_id = 3424742100
+  AND cd.campaign_advertising_channel_type = 'SEARCH'
+GROUP BY gkp.ad_group_criterion_keyword_text, gkp.ad_group_criterion_keyword_match_type
+ORDER BY total_conversions DESC",Club the same text keywords. 'Group by' should only be on keyword text and keyword match type.,"""Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. 
+
+also instructions like micros are passed in the general instructions""",,,,,,,,,
+21,Anshika,Among campaigns targeting the keyword “morning kick” which had the highest ROAS in the past 7 days?,3424742100,Morning Kick - Roundhouse,"Keyword, Rill","SELECT gcd.campaign_name, 
+       (SUM(crm.revenue) - SUM(crm.spend)) AS ROAS
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_crm_performance_2643649617 crm 
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON crm.campaign_id = gcd.campaign_id
+WHERE crm.campaign_id IN(
+  SELECT campaign_id
+  FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_keyword_performance_2643649617   WHERE customer_id = 3424742100
+  AND ad_group_criterion_keyword_text = 'morning kick'
+  AND segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+  GROUP BY campaign_id
+  )
+AND crm.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+GROUP BY gcd.campaign_name
+ORDER BY ROAS DESC
+LIMIT 1"," - Date Functions : 
+        - Whenever previous ""X"" days are mentioned :
+            - ALWAYS excludes current day:
+            - Formula: `DATE_SUB(CURRENT_DATE(), INTERVAL X DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 7 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 14 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+  
+        - Whenever ""This month"" is mentioned:
+            - Always select from 1st to today's date:
+            - Formula: `BETWEEN DATE_TRUNC(CURRENT_DATE(), MONTH) AND CURRENT_DATE()`
+        
+        - Whenever ""Last week"" or ""previous week"" is mentioned:
+            - Always Sunday to Saturday of previous week:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 WEEK) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 DAY)`
+        
+        - Whenever ""Last month"" or ""previous month"" is mentioned:
+            - Always 1st to end of previous month:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 MONTH) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 DAY)`
+   
+        - Use SAFE_DIVIDE(SUM(x), SUM(y)) rather than AVG(SAFE_DIVIDE(x, y)) to compute the average order value over a date range.
+        - When no specific date or date range is defined in the question, use aggregate functions cumulative for ENTIRE date range of the data.
+        - When year is not specified, use the year {current_year} as the default year.
+
+
+
+Club the same text keywords. 'Group by' should only be on keyword text and keyword match type.",Assuming rill metrics and instructions are going in general instructions,,,,,,,,,
+22,Anshika,Identify campaigns with CAC greater than $50 and more than 100 conversions in the last 30 days.,3424742100,Morning Kick - Roundhouse,Rill,"SELECT gcd.campaign_name, SAFE_DIVIDE(SUM(crm.spend), SUM(crm.new_customers)) AS CAC, SUM(crm.new_customers) AS total_conversions
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_crm_performance_2643649617 crm
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON crm.campaign_id = gcd.campaign_id
+WHERE crm.customer_id = 3424742100
+AND crm.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+GROUP BY gcd.campaign_id, gcd.campaign_name
+HAVING CAC > 50
+AND SUM(crm.new_customers) > 100"," - Date Functions : 
+        - Whenever previous ""X"" days are mentioned :
+            - ALWAYS excludes current day:
+            - Formula: `DATE_SUB(CURRENT_DATE(), INTERVAL X DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 7 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 14 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+  
+        - Whenever ""This month"" is mentioned:
+            - Always select from 1st to today's date:
+            - Formula: `BETWEEN DATE_TRUNC(CURRENT_DATE(), MONTH) AND CURRENT_DATE()`
+        
+        - Whenever ""Last week"" or ""previous week"" is mentioned:
+            - Always Sunday to Saturday of previous week:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 WEEK) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 DAY)`
+        
+        - Whenever ""Last month"" or ""previous month"" is mentioned:
+            - Always 1st to end of previous month:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 MONTH) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 DAY)`
+   
+        - Use SAFE_DIVIDE(SUM(x), SUM(y)) rather than AVG(SAFE_DIVIDE(x, y)) to compute the average order value over a date range.
+        - When no specific date or date range is defined in the question, use aggregate functions cumulative for ENTIRE date range of the data.
+        - When year is not specified, use the year {current_year} as the default year.",Assuming rill metrics and instructions are going in general instructions,,,,,,,,,
+23,Anshika,Breakdown my ROAS for the past 30 days by campaign type.,3424742100,Morning Kick - Roundhouse,Rill,"SELECT gcd.campaign_advertising_channel_type AS campaign_type, (SUM(crm.revenue) - SUM(crm.spend)) AS ROAS
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_crm_performance_2643649617 crm
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON crm.campaign_id = gcd.campaign_id
+WHERE crm.customer_id = 3424742100
+AND crm.segments_date BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+GROUP BY gcd.campaign_advertising_channel_type
+ORDER BY ROAS DESC"," - Date Functions : 
+        - Whenever previous ""X"" days are mentioned :
+            - ALWAYS excludes current day:
+            - Formula: `DATE_SUB(CURRENT_DATE(), INTERVAL X DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 7 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+            - Example: ""last 14 days"" = `DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY) AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)`
+  
+        - Whenever ""This month"" is mentioned:
+            - Always select from 1st to today's date:
+            - Formula: `BETWEEN DATE_TRUNC(CURRENT_DATE(), MONTH) AND CURRENT_DATE()`
+        
+        - Whenever ""Last week"" or ""previous week"" is mentioned:
+            - Always Sunday to Saturday of previous week:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 WEEK) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), WEEK(SUNDAY)), INTERVAL 1 DAY)`
+        
+        - Whenever ""Last month"" or ""previous month"" is mentioned:
+            - Always 1st to end of previous month:
+            - Formula: `DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 MONTH) AND DATE_SUB(DATE_TRUNC(CURRENT_DATE(), MONTH), INTERVAL 1 DAY)`
+   
+        - Use SAFE_DIVIDE(SUM(x), SUM(y)) rather than AVG(SAFE_DIVIDE(x, y)) to compute the average order value over a date range.
+        - When no specific date or date range is defined in the question, use aggregate functions cumulative for ENTIRE date range of the data.
+        - When year is not specified, use the year {current_year} as the default year.",Assuming rill metrics and instructions are going in general instructions,,,,,,,,,
+24,Anshika,How many New Customers did we acquire through each campaign yesterday?,3424742100,Morning Kick - Roundhouse,Rill,"SELECT gcd.campaign_name, SUM(crm.new_customers) AS new_customers
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_crm_performance_2643649617 crm
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON crm.campaign_id = gcd.campaign_id
+WHERE crm.customer_id = 3424742100 
+AND crm.segments_date = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+GROUP BY gcd.campaign_name
+ORDER BY new_customers DESC",,Assuming rill metrics and instructions are going in general instructions,,,,,,,,,
+25,Anshika,how many landing pages are running in this account?,3424742100,Morning Kick - Roundhouse,Landing Pages,"SELECT COUNT(DISTINCT glp.landing_page_view_unexpanded_final_url) 
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_landing_page_performance_2643649617 glp
+WHERE glp.customer_id = 3424742100",Landing pages url should be clubbed on the basis of url. For example: same url in diffrent campaign should be considered as same. ,,,,,,,,,,
+26,Anshika,Which campaign has highest CPM on Mobile phone device?,3424742100,Morning Kick - Roundhouse,Device,"SELECT gcd.campaign_name, 
+       SAFE_DIVIDE(SAFE_DIVIDE(SUM(gcdp.metrics_cost_micros), 1000000), SUM(gcdp.metrics_impressions)) * 1000 AS cpm
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_device_performance_2643649617 gcdp ON gcd.campaign_id = gcdp.campaign_id
+WHERE gcd.customer_id = 3424742100
+  AND gcdp.segments_device = 'MOBILE'
+GROUP BY gcd.campaign_id, gcd.campaign_name
+ORDER BY cpm DESC
+LIMIT 1",,"""Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. 
+
+also instructions like micros are passed in the general instructions""",,,,,,,,,
+27,Anshika,"At what time did campaign ""adv_morningkick_gdn_top-ads-top-audiences3"" have the highest impression on the 1st of June ?",3424742100,Morning Kick - Roundhouse,Dayparting,"SELECT gcdp.segments_hour, SUM(gcdp.metrics_impressions) AS total_impressions
+FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_time_performance_2643649617 gcdp
+JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gcdp.campaign_id = gcd.campaign_id
+WHERE gcd.customer_id = 3424742100
+AND gcd.campaign_name = 'adv_morningkick_gdn_top-ads-top-audiences3'
+AND gcdp.segments_date = '2025-06-01'
+GROUP BY gcdp.segments_hour
+ORDER BY total_impressions DESC
+LIMIT 1","
+
+- Time of day analysis: use {table_prefix}.google_ads_campaign_time_performance_2643649617",,,,,,,,,,
+,,,,,,,,, ,,,,,,,,

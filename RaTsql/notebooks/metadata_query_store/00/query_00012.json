@@ -1,0 +1,19 @@
+{
+  "ref_id": "query_00012",
+  "query": "How many ads had over 1000 clicks on 3 april 2025?",
+  "sql": "SELECT COUNT(DISTINCT ga.ad_group_ad_ad_id) \nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_performance_2643649617 ga \nWHERE ga.customer_id = 3424742100 \nAND ga.segments_date = '2025-04-03' \nAND ga.metrics_clicks > 1000",
+  "tables": [
+    "ad_group_ads_performance"
+  ],
+  "columns": [
+    "metrics_clicks",
+    "ad_group_ad_ad_id",
+    "segments_date",
+    "customer_id"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Ad",
+  "instructions": "nan",
+  "instructions_comment": "nan"
+}

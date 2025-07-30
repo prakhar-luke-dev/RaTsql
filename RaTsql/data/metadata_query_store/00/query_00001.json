@@ -1,0 +1,31 @@
+{
+  "ref_id": "query_00001",
+  "query": "What is the total number of campaigns with a conversion rate above 4% in may 2025.",
+  "sql": "SELECT COUNT(*) AS total_campaigns_above_4pct_CR\nFROM (\n SELECT \n cp.campaign_id,\n SAFE_MULTIPLY(\n SAFE_DIVIDE(SUM(cp.metrics_conversions), SUM(cp.metrics_interactions)),\n 100\n ) AS conversion_rate\n FROM `advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617` cp\n WHERE cp.customer_id = 3424742100\n AND cp.segments_date BETWEEN '2025-05-01' AND '2025-05-31'\n GROUP BY cp.campaign_id\n HAVING conversion_rate > 4\n) AS campaign_cr;",
+  "tables": [
+    "campaign_performance"
+  ],
+  "columns": [
+    "campaign_id",
+    "conversion_rate",
+    "customer_id",
+    "metrics_conversions",
+    "metrics_interactions",
+    "segments_date"
+  ],
+  "table_column_map": {
+    "campaign_performance": [
+      "campaign_id",
+      "conversion_rate",
+      "customer_id",
+      "metrics_conversions",
+      "metrics_interactions",
+      "segments_date"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Campaign",
+  "instructions": "nan",
+  "instructions_comment": "Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. \n\nalso instructions like micros are passed in the general instructions"
+}

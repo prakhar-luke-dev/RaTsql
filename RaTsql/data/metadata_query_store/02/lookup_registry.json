@@ -1,0 +1,37 @@
+[
+  {
+    "ref_id": "query_00020",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/02/query_00020.json",
+    "query": "Among campaigns targeting the keyword \u201cmorning kick\u201d which had the highest ROAS in the past 7 days?"
+  },
+  {
+    "ref_id": "query_00021",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/02/query_00021.json",
+    "query": "Identify campaigns with CAC greater than $50 and more than 100 conversions in the last 30 days."
+  },
+  {
+    "ref_id": "query_00022",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/02/query_00022.json",
+    "query": "Breakdown my ROAS for the past 30 days by campaign type."
+  },
+  {
+    "ref_id": "query_00023",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/02/query_00023.json",
+    "query": "How many New Customers did we acquire through each campaign yesterday?"
+  },
+  {
+    "ref_id": "query_00024",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/02/query_00024.json",
+    "query": "how many landing pages are running in this account?"
+  },
+  {
+    "ref_id": "query_00025",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/02/query_00025.json",
+    "query": "Which campaign has highest CPM on Mobile phone device?"
+  },
+  {
+    "ref_id": "query_00026",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/02/query_00026.json",
+    "query": "At what time did campaign \"adv_morningkick_gdn_top-ads-top-audiences3\" have the highest impression on the 1st of June ?"
+  }
+]

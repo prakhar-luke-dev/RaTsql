@@ -1,0 +1,22 @@
+{
+  "ref_id": "query_00000",
+  "query": "Which campaign had the maximum impressions on 1 jan 2025?",
+  "sql": "SELECT gcd.campaign_id, gcd.campaign_name, SUM(gcp.metrics_impressions) AS total_impressions FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 gcp JOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gcp.campaign_id = gcd.campaign_id WHERE gcp.customer_id = 8870377244 AND gcp.segments_date = '2025-01-01' GROUP BY gcd.campaign_id, gcd.campaign_name ORDER BY total_impressions DESC LIMIT 1",
+  "tables": [
+    "campaign_performance",
+    "campaign_details"
+  ],
+  "columns": [
+    "campaign_name",
+    "campaign_id",
+    "segments_date",
+    "customer_id",
+    "total_impressions",
+    "metrics_impressions"
+  ],
+  "brand_id": "8870377244",
+  "brand_name": "Gundry MD - Branded",
+  "category": "Campaign",
+  "instructions": "nan",
+  "instructions_comment": "nan"
+}

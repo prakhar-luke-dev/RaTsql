@@ -1,0 +1,22 @@
+{
+  "ref_id": "query_00006",
+  "query": "Which Campaign has the maximum views on 15-jan-2025?",
+  "sql": "SELECT gcd.campaign_name, SUM(gcp.metrics_video_views) AS total_views \nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_performance_2643649617 gcp \nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gcp.campaign_id = gcd.campaign_id \nWHERE gcd.customer_id = 3424742100 \nAND gcp.segments_date = '2025-01-15' \nGROUP BY gcd.campaign_id, gcd.campaign_name \nORDER BY total_views DESC \nLIMIT 1",
+  "tables": [
+    "campaign_performance",
+    "campaign_details"
+  ],
+  "columns": [
+    "metrics_video_views",
+    "campaign_name",
+    "campaign_id",
+    "total_views",
+    "segments_date",
+    "customer_id"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Campaign",
+  "instructions": "nan",
+  "instructions_comment": "nan"
+}

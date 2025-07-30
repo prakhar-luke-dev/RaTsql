@@ -1,0 +1,23 @@
+{
+  "ref_id": "query_00003",
+  "query": "what are the best performing hours of the day for this account across all the different campaigns?",
+  "sql": "SELECT gcdp.segments_hour, SUM(gcdp.metrics_conversions) AS total_conversions, SAFE_DIVIDE(SUM(gcdp.metrics_cost_micros), 1000000) AS total_cost\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_time_performance_2643649617 gcdp\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd ON gcdp.campaign_id = gcd.campaign_id\nWHERE gcd.customer_id = 3424742100\nGROUP BY gcdp.segments_hour\nORDER BY total_conversions DESC, total_cost ASC\nLIMIT 10",
+  "tables": [
+    "campaign_details",
+    "campaign_time_performance"
+  ],
+  "columns": [
+    "campaign_id",
+    "total_conversions",
+    "total_cost",
+    "customer_id",
+    "metrics_conversions",
+    "segments_hour",
+    "metrics_cost_micros"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Account, Dayparting",
+  "instructions": "## PERFORMANCE ANALYSIS GUIDELINES :\n    - Primary Metrics to Use for Performance Evaluation (Any Entity):\n        - Priority 1 : Conversions (higher is better)\n        - Priority 2 (tie-breaker) : Spend (lower is better)\n        - Note : \n            - Always show eCPA in the final output if the question is about profitability or success or performance or such\n            - Do not use eCPA as a metric for ranking.\n            - 3 things should be present in the final output: \n                - total_conversions\n                - total_cost\n                - eCPA\n\n    - Top/Best Performing or \"Most Profitable\" Entities :\n        - Priority 1 : Rank by highest total_conversions (descending)\n        - Priority 2 (tie-breaker) : Use lowest total_cost (ascending)\n\n    - Worst/Least Performing/Profitable Entities :\n        - Priority 1 : Include all entities \u2014 including those with zero or null conversions\n        - Priority 2 (tie-breaker) : Rank by lowest total_conversions (ascending)\n        - Priority 3 (final tie-breaker) : Use highest total_cost (descending)\n\n\n- Time of day analysis: use {table_prefix}.google_ads_campaign_time_performance_2643649617",
+  "instructions_comment": "nan"
+}

@@ -1,0 +1,23 @@
+{
+  "ref_id": "query_00025",
+  "query": "Which campaign has highest CPM on Mobile phone device?",
+  "sql": "SELECT gcd.campaign_name, \n       SAFE_DIVIDE(SAFE_DIVIDE(SUM(gcdp.metrics_cost_micros), 1000000), SUM(gcdp.metrics_impressions)) * 1000 AS cpm\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_details_2643649617 gcd\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_campaign_device_performance_2643649617 gcdp ON gcd.campaign_id = gcdp.campaign_id\nWHERE gcd.customer_id = 3424742100\n  AND gcdp.segments_device = 'MOBILE'\nGROUP BY gcd.campaign_id, gcd.campaign_name\nORDER BY cpm DESC\nLIMIT 1",
+  "tables": [
+    "campaign_device_performance",
+    "campaign_details"
+  ],
+  "columns": [
+    "campaign_name",
+    "campaign_id",
+    "cpm",
+    "customer_id",
+    "metrics_cost_micros",
+    "segments_device",
+    "metrics_impressions"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Device",
+  "instructions": "nan",
+  "instructions_comment": "\"Assuming the google derrived metric formula and the associated table information is getting passed in the general instructions.. \n\nalso instructions like micros are passed in the general instructions\""
+}

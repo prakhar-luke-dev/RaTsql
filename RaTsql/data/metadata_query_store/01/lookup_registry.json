@@ -1,0 +1,52 @@
+[
+  {
+    "ref_id": "query_00010",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00010.json",
+    "query": "Which ad group has the highest conversion rate in may month?"
+  },
+  {
+    "ref_id": "query_00011",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00011.json",
+    "query": "Which campaign and ad group had maximum female impressions on 29 dec 2024?"
+  },
+  {
+    "ref_id": "query_00012",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00012.json",
+    "query": "How many ads had over 1000 clicks on 3 april 2025?"
+  },
+  {
+    "ref_id": "query_00013",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00013.json",
+    "query": "how many disapproved ads does this account have over the past 90 days?"
+  },
+  {
+    "ref_id": "query_00014",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00014.json",
+    "query": "What is the total clicks of age above 65+ in date between 13 mar to 23 may 25?"
+  },
+  {
+    "ref_id": "query_00015",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00015.json",
+    "query": "what are the age ranges available in database?"
+  },
+  {
+    "ref_id": "query_00016",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00016.json",
+    "query": "Provide a breakdown in terms of gender eCPA for this campaign - adv-morningkick-branded-search"
+  },
+  {
+    "ref_id": "query_00017",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00017.json",
+    "query": "What was the most profitable keyword in adv-morningkick-nonbranded-energy campaign?"
+  },
+  {
+    "ref_id": "query_00018",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00018.json",
+    "query": "Which keywords have received the most impressions over the past 30 days?"
+  },
+  {
+    "ref_id": "query_00019",
+    "file": "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/metadata_query_store/01/query_00019.json",
+    "query": "Can you list all the search keywords running in order by the ones that have the most conversions and include their cost per conversion?"
+  }
+]

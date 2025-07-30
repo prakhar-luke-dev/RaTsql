@@ -1,0 +1,34 @@
+{
+  "ref_id": "query_00008",
+  "query": "List top 5 ad groups which has highest clicks",
+  "sql": "SELECT gag.ad_group_name, SUM(gap.metrics_clicks) AS total_clicks\nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_performance_2643649617 gap\nJOIN advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_details_2643649617 gag ON gap.ad_group_id = gag.ad_group_id\nWHERE gap.customer_id = 3424742100\nGROUP BY gag.ad_group_id, gag.ad_group_name\nORDER BY total_clicks DESC\nLIMIT 5",
+  "tables": [
+    "ad_group_details",
+    "ad_group_ads_performance"
+  ],
+  "columns": [
+    "ad_group_id",
+    "ad_group_name",
+    "customer_id",
+    "metrics_clicks",
+    "total_clicks"
+  ],
+  "table_column_map": {
+    "ad_group_details": [
+      "ad_group_id",
+      "ad_group_name",
+      "total_clicks"
+    ],
+    "ad_group_ads_performance": [
+      "ad_group_id",
+      "customer_id",
+      "metrics_clicks",
+      "total_clicks"
+    ]
+  },
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Ad Group",
+  "instructions": "nan",
+  "instructions_comment": "nan"
+}

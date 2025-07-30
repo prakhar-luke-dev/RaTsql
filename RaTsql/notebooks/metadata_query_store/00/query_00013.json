@@ -1,0 +1,20 @@
+{
+  "ref_id": "query_00013",
+  "query": "how many disapproved ads does this account have over the past 90 days?",
+  "sql": "SELECT COUNT(DISTINCT ga.ad_group_ad_ad_id) \nFROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_details_2643649617 ga\nWHERE ga.customer_id = 3424742100\nAND ga.ad_group_ad_policy_summary_approval_status = 'DISAPPROVED'\nAND ga.ad_group_ad_ad_id IN (\n  SELECT ad_group_ad_ad_id \n  FROM advida-data-pipeline.manager_dataset_preprod_updated.google_ads_ad_group_ads_performance_2643649617\n  WHERE customer_id = 3424742100\n  AND segments_date >= DATE_SUB(CURRENT_DATE, INTERVAL 90 DAY)\n)",
+  "tables": [
+    "ad_group_ads_performance",
+    "ad_group_ads_details"
+  ],
+  "columns": [
+    "ad_group_ad_policy_summary_approval_status",
+    "ad_group_ad_ad_id",
+    "segments_date",
+    "customer_id"
+  ],
+  "brand_id": "3424742100",
+  "brand_name": "Morning Kick - Roundhouse",
+  "category": "Ad",
+  "instructions": "nan",
+  "instructions_comment": "nan"
+}
