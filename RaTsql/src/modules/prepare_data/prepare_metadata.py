@@ -22,14 +22,14 @@
 #       }
 #
 #
-#===========================================================================
+# ===========================================================================
 import os
+import json
 import pandas as pd
 import sqlglot
 from deprecated import deprecated
 from sqlglot import parse_one
-import json
-from pathlib import Path
+
 # TODO : Next time store respective columns in respective tables
 # Customize these
 CSV_PATH = "/home/prakhar/luke-dev/txt2sql_methods/RaTsql/notebooks/dummy_sql_ground_truth_for_automated_testing - Sheet1.csv"

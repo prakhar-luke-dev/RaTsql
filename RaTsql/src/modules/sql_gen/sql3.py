@@ -4,14 +4,11 @@
 # Email   : prakhar.luke.dev@gmail.com
 # Time    : 7/29/25 11:46 PM
 
-from modules.prompts.sql3_prompts import SYSTEM_PROMPT_SQL3
+from config import get_chat_model
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from modules.custom_tools.sql_tools import SQLGenerator
-import json
-
-from config import get_chat_model
-
+from modules.prompts.sql3_prompts import SYSTEM_PROMPT_SQL3
 
 
 def generate_structured_sql(

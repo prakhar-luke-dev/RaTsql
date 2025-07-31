@@ -4,11 +4,12 @@
 # Email   : prakhar.luke.dev@gmail.com
 # Time    : 7/30/25 7:03 PM
 
-from modules.prompts.loop_sql3_prompt import LOOP_SQL3_SYS_PROMPT_1, LOOP_SQL3_SYS_PROMPT_2
-from langchain_core.messages import HumanMessage, SystemMessage
 from config import get_chat_model
-from modules.custom_tools.sql_tools import SQLGenerator
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
+from modules.custom_tools.sql_tools import SQLGenerator
+from modules.prompts.loop_sql3_prompt import LOOP_SQL3_SYS_PROMPT_2
+
 
 def loop_sql3(
     llm_client: ChatOpenAI,

@@ -6,7 +6,10 @@ txt2sql_methods
 
 ```bash
 conda create -n ratsql python=3.12
-pip install -r ratreq.txt
+conda activate ratsql
+```
+```bash
+pip install -r requirements.txt
 ```
 
 ## Step 1 : Prepare Data

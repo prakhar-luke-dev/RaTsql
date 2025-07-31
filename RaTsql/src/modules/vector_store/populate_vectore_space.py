@@ -6,16 +6,13 @@
 
 import os
 import json
-import argparse
 from pathlib import Path
-from langchain_core.documents import Document
-from dotenv import load_dotenv, find_dotenv
-from milvus_client import get_milvus_vector_store
-from embed_model import get_deepinfra_embedding_model
 
-from pathlib import Path
-import json
+from dotenv import load_dotenv, find_dotenv
 from langchain.schema import Document
+
+from embed_model import get_deepinfra_embedding_model
+from milvus_client import get_milvus_vector_store
 
 
 def load_json_files(base_dir: str):

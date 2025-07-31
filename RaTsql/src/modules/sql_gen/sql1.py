@@ -5,14 +5,13 @@
 # Time    : 7/29/25 11:45 PM
 
 
-from config import get_llm_model
-from modules.prompts.sql1_prompts import SYSTEM_PROMPT_SQL1
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_openai import ChatOpenAI
-from modules.custom_tools.sql_tools import SQLGenerator
 import json
 
 from config import get_chat_model
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_openai import ChatOpenAI
+from modules.custom_tools.sql_tools import SQLGenerator
+from modules.prompts.sql1_prompts import SYSTEM_PROMPT_SQL1
 
 
 def generate_structured_sql(llm_client: ChatOpenAI, full_schema: json, pruned_schema: json, user_question: HumanMessage, instructions: str, other_info: str) -> dict[str, bool]:

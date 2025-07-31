@@ -4,11 +4,11 @@
 # Email   : prakhar.luke.dev@gmail.com
 # Time    : 7/30/25 3:47 PM
 
-from modules.custom_tools.sql_tools import SQLHints
 from config import get_chat_model
-from langchain_openai import ChatOpenAI
-from modules.prompts.hint_prompts import HINT_SYSTEM_PROMPT
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_openai import ChatOpenAI
+from modules.custom_tools.sql_tools import SQLHints
+from modules.prompts.hint_prompts import HINT_SYSTEM_PROMPT
 
 
 def generate_hints(llm_client: ChatOpenAI, dense_schema: dict|str, data_query: str, other_info: str):

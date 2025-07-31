@@ -6,8 +6,9 @@
 # Time    : 7/28/25 3:29 PM
 
 
-from langgraph.graph import MessagesState, START
-from typing import Optional
+from langgraph.graph import MessagesState
+
+
 #===========================================================================
 #                            GLOBAL STATE
 #===========================================================================

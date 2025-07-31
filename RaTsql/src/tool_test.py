@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
-from typing import Optional
-from langchain_core.messages import HumanMessage, SystemMessage
 import json
+from typing import Optional
+
+from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel, Field
+
 from config import get_chat_model  # adjust import to match your setup
 
 

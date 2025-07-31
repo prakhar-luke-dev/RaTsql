@@ -5,11 +5,11 @@
 # Time    : 7/29/25 11:45 PM
 
 from config import get_chat_model
-from modules.prompts.sql2_prompts import SYSTEM_PROMPT_SQL2
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from modules.custom_tools.sql_tools import SQLGenerator
-import json
+from modules.prompts.sql2_prompts import SYSTEM_PROMPT_SQL2
+
 
 def generate_structured_sql2(llm_client: ChatOpenAI, dense_schema: str|dict, hints: dict, user_question: HumanMessage, other_info: str):
     """

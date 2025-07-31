@@ -8,14 +8,14 @@
 
 from langfuse import Langfuse, get_client
 from langfuse.langchain import CallbackHandler
-from global_graph import get_global_graph
+
 from config import (
     LANGFUSE_PUBLIC_KEY,
     LANGFUSE_SECRET_KEY,
-    LANGFUSE_HOST,
-    DEEPINFRA_API_TOKEN
+    LANGFUSE_HOST
 )
-from utils import save_graph_to_file
+from global_graph import get_global_graph
+
 Langfuse(
     public_key=LANGFUSE_PUBLIC_KEY,
     secret_key=LANGFUSE_SECRET_KEY,

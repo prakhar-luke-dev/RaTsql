@@ -4,8 +4,10 @@
 # Email   : prakhar.luke.dev@gmail.com
 # Time    : 7/30/25 1:34 PM
 
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
+
 
 class SQLGenerator(BaseModel):
     """Generate SQL query based on a question, provided schema and instructions."""

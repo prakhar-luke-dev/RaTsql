@@ -3,12 +3,9 @@
 # Author  : prakhar-luke-dev
 # Email   : prakhar.luke.dev@gmail.com
 # Time    : 7/29/25 4:56 PM
-import os
-from dotenv import load_dotenv, find_dotenv
+
 from langchain_community.embeddings import DeepInfraEmbeddings
 
-
-load_dotenv(find_dotenv(), override=True)
 
 def get_deepinfra_embedding_model(*, DEEPINFRA_API_TOKEN: str, embd_model: str ="BAAI/bge-en-icl"):
     try:

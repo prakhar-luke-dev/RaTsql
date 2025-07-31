@@ -3,9 +3,10 @@
 # Author  : prakhar-luke-dev
 # Email   : prakhar.luke.dev@gmail.com
 # Time    : 7/29/25 11:32 PM
-from langchain_openai import ChatOpenAI, OpenAI
-from dotenv import load_dotenv, find_dotenv
 import os
+
+from dotenv import load_dotenv, find_dotenv
+from langchain_openai import ChatOpenAI, OpenAI
 
 load_dotenv(find_dotenv(), override=True)
 LANGFUSE_SECRET_KEY = str(os.getenv("LANGFUSE_SECRET_KEY"))
