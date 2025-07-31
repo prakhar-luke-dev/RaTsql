@@ -255,7 +255,7 @@ def judge_sql3(state: BodyState) -> Command[Literal["modify_sql3", "final_answer
     )
 
 
-def modify_sql3(state: BodyState) -> Command[Literal["rout_sql3", "modify_sql3", "final_answer"]]:
+def modify_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
     body_state_to_update = {}
     # TODO : extract sql history here
     sql_conv_hist : list = state.get("messages")[-3:] if len(state.get("messages")) > 3 else state.get("messages")
