@@ -82,7 +82,7 @@ def union_schemas(schema1_raw, schema2_raw):
 
     return merged_schema
 
-def execute_sql_query(sql_query: str):
+def execute_sql_query(sql_query: str) -> dict[str, str|None]:
     """
     Execute the given SQL query and return the result.
     :param sql_query:

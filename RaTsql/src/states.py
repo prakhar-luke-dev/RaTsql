@@ -28,7 +28,7 @@ class GlobalState(MessagesState):
     similar_data_query : dict
     similarity_threshold : float
     pruned_schema: dict
-    final_answer: str
+    final_answer: str | None
 
 
 #===========================================================================
@@ -54,16 +54,17 @@ class BodyState(HeadState):
     dense_schema : dict
     hints : dict
     gen_sql1 : str
-    res_sql1 : str
+    res_sql1 : str | None
 
     gen_sql2 : str
-    res_sql2 : str
+    res_sql2 : str | None
     
     gen_sql3 : str
-    res_sql3 : str
+    res_sql3 : str | None
 
     max_retires_remaining : int
-    # final_answer : str
+    modify_sql3 : str | None
+    res_modify_sql3 : str | None
 
 #===========================================================================
 #                            TAIL STATE

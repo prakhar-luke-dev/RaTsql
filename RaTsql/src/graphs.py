@@ -65,7 +65,8 @@ def build_body_graph():
     body.add_node("gen_sql2", gen_sql2)
     body.add_node("execute_2sql", get_result_from_both_queries)
     body.add_node("gen_sql3", gen_sql3)
-    body.add_node("loop_sql", loop_sql)
+    body.add_node("rout_sql3", judge_sql3)
+    body.add_node("modify_sql3", modify_sql3)
     body.add_node("final_answer", final_answer)
 
     body.add_edge(START, "gen_sql1")

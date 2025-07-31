@@ -8,16 +8,16 @@ from modules.prompts.loop_sql3_prompt import LOOP_SQL3_SYS_PROMPT_1, LOOP_SQL3_S
 from langchain_core.messages import HumanMessage, SystemMessage
 from config import get_chat_model
 from modules.custom_tools.sql_tools import SQLGenerator
-
+from langchain_openai import ChatOpenAI
 
 def loop_sql3(
+    llm_client: ChatOpenAI,
     sql3: str,
     res_sql3: str,
     dense_schema: str|dict,
     hints: str|dict,
     user_question: HumanMessage,
-    sql_conversation_history: str = None,
-    max_retries: int = 3,
+    sql_conversation_history: list,
 ):
     """
     Generate a new SQL query based on the provided SQL and error.
@@ -28,32 +28,21 @@ def loop_sql3(
         dense_schema (str): A dense representation of the schema.
         hints (str): Hints for generating the SQL query.
         query (str): The user question.
+        max_retries (int): Number of retires remaining in loop
         sql_conversation_history (str, optional): Previous SQL queries and their results.
 
     Returns:
         str: The generated SQL query.
     """
-    llm_client = get_chat_model()
-    # for i in range(max_retries):
-    if sql_conversation_history:
-        # Use the second system prompt if conversation history is provided
-        sys_message_content = LOOP_SQL3_SYS_PROMPT_2.format(
-            sql3=sql3,
-            res_sql3=res_sql3,
-            sql_conversation_history=sql_conversation_history,
-            dense_schema=dense_schema,
-            hints=hints,
-            query=user_question
-        )
-    else:
-        # Use the first system prompt if no conversation history is provided
-        sys_message_content = LOOP_SQL3_SYS_PROMPT_1.format(
-            sql3=sql3,
-            res_sql3=res_sql3,
-            dense_schema=dense_schema,
-            hints=hints,
-            query=user_question
-        )
+
+    sys_message_content = LOOP_SQL3_SYS_PROMPT_2.format(
+        sql3=sql3,
+        res_sql3=res_sql3,
+        sql_conversation_history=sql_conversation_history,
+        dense_schema=dense_schema,
+        hints=hints,
+        query=user_question
+    )
 
     system_message = SystemMessage(content=sys_message_content)
     llm_with_tools = llm_client.bind_tools([SQLGenerator])
@@ -67,3 +56,31 @@ def loop_sql3(
     else:
         raise ValueError(f"❌ No tool output found in response: {response}")
     return parsed
+
+def loop_sql3_on_remaining_tries(
+        sql_to_modify: str,
+        res_sql3: str,
+        dense_schema: str | dict,
+        hints: str | dict,
+        user_question: HumanMessage,
+        max_retries: int,
+        sql_conversation_history: list,
+):
+    llm_client = get_chat_model()
+    if llm_client is not None:
+        sql_validity = loop_sql3(
+            llm_client=llm_client, sql3=sql_to_modify, res_sql3=res_sql3, dense_schema=dense_schema, hints=hints, user_question=user_question,
+            sql_conversation_history=sql_conversation_history
+        )
+        if ("invalid" in sql_validity) and ("sql" in sql_validity):
+            if isinstance(sql_validity['invalid'], bool):
+                if not sql_validity["invalid"]:
+                    sql1 = sql_validity["sql"]
+                    return sql1
+            elif isinstance(sql_validity['invalid'], str):  # incase LLM hallucinates and returns a string instead of bool.
+                if (sql_validity['invalid']).lower() == "false":
+                    sql1 = sql_validity["sql"]
+                    return sql1
+            else:
+                raise ValueError("No sql found , it's invalid or not generated (question might not be related to the schema).")
+
