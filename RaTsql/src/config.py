@@ -11,6 +11,8 @@ from langchain_openai import ChatOpenAI, OpenAI
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+from logs_operations.logger_setup import setup_logger
+
 load_dotenv(find_dotenv(), override=True)
 LANGFUSE_SECRET_KEY = str(os.getenv("LANGFUSE_SECRET_KEY"))
 LANGFUSE_PUBLIC_KEY = str(os.getenv("LANGFUSE_PUBLIC_KEY"))
@@ -46,6 +48,7 @@ credentials_info = {
 credentials = service_account.Credentials.from_service_account_info(credentials_info)
 BQ_CLIENT = bigquery.Client(credentials=credentials, project=BQ_GCP_PROJECT_ID)
 
+graph_logger = setup_logger(log_file="logs/graph_logs.log", log_handler='graph_logger', backup=5)
 
 def get_chat_model(model_name: str = "meta-llama/Llama-3.3-70B-Instruct-Turbo", _temp: float = 0, _verbose: bool=False) -> ChatOpenAI:
     return ChatOpenAI(

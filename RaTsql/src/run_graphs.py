@@ -31,7 +31,7 @@ ratsql = get_global_graph()
 user_config = {
     "configurable": {"thread_id": "saint_luke"},
     "callbacks": [langfuse_handler],
-    "session_id": "preach_anmolSir",
+    "session_id": "preach_channa",
     "user_id": "luke",
 }
 # Set trace attributes dynamically via enclosing span
@@ -40,8 +40,8 @@ with langfuse.start_as_current_span(
 ) as span:
     span.update_trace(
         user_id="saint_luke",
-        session_id="preach_anmolSir",
-        tags=["preaching", "bq", "results"],
+        session_id="preach_channa",
+        tags=["preaching"],
     )
     Ratsql_response = ratsql.invoke(
             {

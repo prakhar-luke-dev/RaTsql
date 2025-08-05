@@ -11,7 +11,7 @@ from typing import Literal
 from langchain_core.messages import HumanMessage
 from langgraph.types import Command
 
-from config import DEEPINFRA_API_TOKEN, dummy_other_info
+from config import DEEPINFRA_API_TOKEN, dummy_other_info, graph_logger
 from modules.prepare_data.prepare_metadata import extract_table_column_map
 from modules.sql_gen.hint_gen import generate_hints_for_sql2
 from modules.sql_gen.loop_sql3 import loop_sql3_on_remaining_tries
@@ -31,9 +31,10 @@ from utils import get_pruned_schema, union_schemas, execute_sql_query, create_dy
 
 
 def user_question(state: HeadState) -> Command[Literal["rag_node"]]:
-    # print("inside head")
+    graph_logger.info("in HEAD")
     head_state_to_update = {
         'similarity_threshold': 0.40,
+        "max_retires_remaining" : 3,
     }
     # set up the threshold and other state variables
     return Command(
@@ -118,7 +119,11 @@ def get_pruned_schema_from_full_approach(state: HeadState) -> Command[Literal["_
 #===========================================================================
 
 def gen_sql1(state: BodyState) -> Command[Literal["get_schema_from_sql", "gen_sql3"]]:
-    # print("inside body")
+    graph_logger.info("in BODY")
+    max_try = state.get("max_retires_remaining")
+    graph_logger.info(f"max try : {max_try}")
+    if max_try is None:
+        max_try = 3
     from utils import get_full_schema
     full_schema_json = get_full_schema()
     pruned_schema_json = state.get("pruned_schema")
@@ -132,7 +137,10 @@ def gen_sql1(state: BodyState) -> Command[Literal["get_schema_from_sql", "gen_sq
         examples = create_dynamic_prompt(similar_data_query=state.get("similar_data_query"), want_few_shots=True)
     )
 
-    body_state_to_update = {"gen_sql1": sql1_output}
+    body_state_to_update = {
+        "gen_sql1": sql1_output,
+        "max_retires_remaining": max_try
+    }
     return Command(
         update=body_state_to_update,
         goto="get_schema_from_sql"
@@ -239,10 +247,6 @@ def judge_sql3(state: BodyState) -> Command[Literal["modify_sql3", "final_answer
     If the SQL3 query is invalid, it will go to the modify_sql3 node.
     """
     goto_node = "final_answer"
-    body_state_to_update = {}
-    max_try = state.get("max_retires_remaining")
-    if max_try is None:
-        body_state_to_update = {"max_retires_remaining": 3}
     if state.get("modify_sql3") is None:
         res_sql3 : dict[str, str|None] = execute_sql_query(sql_query=state.get("gen_sql3"))
         # TODO : to trigger error message uncomment below code
@@ -257,7 +261,6 @@ def judge_sql3(state: BodyState) -> Command[Literal["modify_sql3", "final_answer
             goto_node = "modify_sql3"
     else:
         res_modify_sql3 : dict[str, str|None] = execute_sql_query(sql_query=state.get("modify_sql3"))
-        # TODO : Pass the error message and create logic for it
 
         body_state_to_update = {
             "res_modify_sql3" : {

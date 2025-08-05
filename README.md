@@ -1,10 +1,10 @@
-# Retrieval-augmented Text-to-SQL
+# RaTsql : Retrieval-augmented Text-to-SQL
 
-R: Retrieval
+- R: Retrieval
+- a: augmented
+- Tsql: Text-to-SQL
 
-a: augmented
-
-Tsql: Text-to-SQL
+# Flow dig : [Click to view Flow dig.](https://miro.com/app/board/uXjVJZTBDcc=/?share_link_id=245310762751)
 
 # SETUP : 
 
