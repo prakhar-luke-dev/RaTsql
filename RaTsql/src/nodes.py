@@ -9,7 +9,8 @@ import json
 from typing import Literal
 
 from langchain_core.messages import HumanMessage
-from langgraph.types import Command
+from langgraph.types import Command, StreamWriter
+from openai import max_retries
 
 from config import DEEPINFRA_API_TOKEN, dummy_other_info, graph_logger
 from modules.prepare_data.prepare_metadata import extract_table_column_map
@@ -30,7 +31,8 @@ from utils import get_pruned_schema, union_schemas, execute_sql_query, create_dy
 #===========================================================================
 
 
-def user_question(state: HeadState) -> Command[Literal["rag_node"]]:
+def user_question(state: HeadState, writer: StreamWriter) -> Command[Literal["rag_node"]]:
+    writer({"process": "setting things up"})
     graph_logger.info("in HEAD")
     head_state_to_update = {
         'similarity_threshold': 0.40,
@@ -42,10 +44,11 @@ def user_question(state: HeadState) -> Command[Literal["rag_node"]]:
         goto="rag_node"
     )
 
-def rag_node(state: HeadState) -> Command[Literal["method_router_node"]]:
+def rag_node(state: HeadState, writer: StreamWriter) -> Command[Literal["method_router_node"]]:
     """
     RAG node to find similar queries in the vector store based on data query.
     """
+    writer({"process": "Extracting similar queries from RAG"})
     head_state_to_update = {}
     data_query = state.get('data_query')
     embedding_model = get_deepinfra_embedding_model(DEEPINFRA_API_TOKEN=DEEPINFRA_API_TOKEN,
@@ -76,16 +79,18 @@ def rag_node(state: HeadState) -> Command[Literal["method_router_node"]]:
         goto="method_router_node"
     )
 
-def method_router_node(state: HeadState) -> Command[Literal["get_pruned_schema_from_rag", "get_pruned_schema_from_full_approach"]]:
+def method_router_node(state: HeadState, writer: StreamWriter) -> Command[Literal["get_pruned_schema_from_rag", "get_pruned_schema_from_full_approach"]]:
     goto_node = "get_pruned_schema_from_rag" if state.get("rout_schema_through_rag") else "get_pruned_schema_from_full_approach"
+    writer({"routing": "to get pruned schema from RAG information"})
     return Command(
         goto=goto_node
     )
 
-def get_pruned_schema_from_rag(state: HeadState) -> Command[Literal["__end__"]]:
+def get_pruned_schema_from_rag(state: HeadState, writer: StreamWriter) -> Command[Literal["__end__"]]:
     """
     RAG node was used to find similar queries and this node will be used to get the pruned schema from those queries.
     """
+    writer({"process": "prunning schema from RAG information"})
     head_state_to_update = {
         "pruned_schema": json.dumps(
             get_pruned_schema(
@@ -102,7 +107,7 @@ def get_pruned_schema_from_rag(state: HeadState) -> Command[Literal["__end__"]]:
         goto="__end__"
     )
 
-def get_pruned_schema_from_full_approach(state: HeadState) -> Command[Literal["__end__"]]:
+def get_pruned_schema_from_full_approach(state: HeadState, writer: StreamWriter) -> Command[Literal["__end__"]]:
     head_state_to_update = {"pruned_schema": get_pruned_schema(
         similar_data_queries=None,
         from_rag=False
@@ -118,7 +123,8 @@ def get_pruned_schema_from_full_approach(state: HeadState) -> Command[Literal["_
 #                            BODY NODES
 #===========================================================================
 
-def gen_sql1(state: BodyState) -> Command[Literal["get_schema_from_sql", "gen_sql3"]]:
+def gen_sql1(state: BodyState, writer: StreamWriter) -> Command[Literal["get_schema_from_sql", "gen_sql3"]]:
+    writer({"process": "trying to generate 1st SQL"})
     graph_logger.info("in BODY")
     max_try = state.get("max_retires_remaining")
     graph_logger.info(f"max try : {max_try}")
@@ -146,7 +152,8 @@ def gen_sql1(state: BodyState) -> Command[Literal["get_schema_from_sql", "gen_sq
         goto="get_schema_from_sql"
     )
 
-def get_schema_from_sql(state: BodyState) -> Command[Literal["dense_schema"]]:
+def get_schema_from_sql(state: BodyState, writer: StreamWriter) -> Command[Literal["dense_schema"]]:
+    writer({"process": "using SQL 1 to get schema"})
     sql = state.get("gen_sql1")
     table_column_map = extract_table_column_map(sql)
     body_state_to_update = {"extracted_schema_from_sql1": table_column_map}
@@ -155,7 +162,8 @@ def get_schema_from_sql(state: BodyState) -> Command[Literal["dense_schema"]]:
         goto="dense_schema"
     )
 
-def dense_schema(state: BodyState) -> Command[Literal["gen_hints"]]:
+def dense_schema(state: BodyState, writer: StreamWriter) -> Command[Literal["gen_hints"]]:
+    writer({"process": "generating Dense schema from all knowledge"})
     pruned_schema = state.get("pruned_schema")
     extracted_schema_from_sql1 = state.get("extracted_schema_from_sql1")
 
@@ -166,7 +174,8 @@ def dense_schema(state: BodyState) -> Command[Literal["gen_hints"]]:
         goto="gen_hints"
     )
 
-def gen_hints(state: BodyState) -> Command[Literal["gen_sql2"]]:
+def gen_hints(state: BodyState, writer: StreamWriter) -> Command[Literal["gen_sql2"]]:
+    writer({"process": "generating hints for 2nd SQL"})
     hints = generate_hints_for_sql2(
         dense_schema=state.get("dense_schema"),
         data_query=state.get("data_query"),
@@ -178,7 +187,8 @@ def gen_hints(state: BodyState) -> Command[Literal["gen_sql2"]]:
         goto="gen_sql2"
     )
 
-def gen_sql2(state: BodyState) -> Command[Literal["execute_2sql"]]:
+def gen_sql2(state: BodyState, writer: StreamWriter) -> Command[Literal["execute_2sql"]]:
+    writer({"process": "generating 2nd SQL"})
     sql2_output = generate_sql2(
         dense_schema=state.get("dense_schema"),
         hints=state.get("hints"),
@@ -193,8 +203,9 @@ def gen_sql2(state: BodyState) -> Command[Literal["execute_2sql"]]:
         goto="execute_2sql"
     )
 
-def get_result_from_both_queries(state: BodyState) -> Command[Literal["gen_sql3"]]:
+def get_result_from_both_queries(state: BodyState, writer: StreamWriter) -> Command[Literal["gen_sql3"]]:
     # TODO : Pass the error message and create logic for it
+    writer({"process": "Executing both SQLs"})
     gen_sql1 = state.get("gen_sql1")
     gen_sql2 = state.get("gen_sql2")
 
@@ -217,8 +228,8 @@ def get_result_from_both_queries(state: BodyState) -> Command[Literal["gen_sql3"
         goto="gen_sql3"
     )
 
-def gen_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
-
+def gen_sql3(state: BodyState, writer: StreamWriter) -> Command[Literal["rout_sql3"]]:
+    writer({"process": "generating 3rd SQL"})
     sql3_output = generate_sql3(
         sql1 = state.get("gen_sql1"),
         sql2 = state.get("gen_sql2"),
@@ -240,12 +251,13 @@ def gen_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
         goto="rout_sql3"
     )
 
-def judge_sql3(state: BodyState) -> Command[Literal["modify_sql3", "final_answer"]]:
+def judge_sql3(state: BodyState, writer: StreamWriter) -> Command[Literal["modify_sql3", "final_answer"]]:
     """
     This node is used to judge the SQL3 query generated by the gen_sql3 node.
     If the SQL3 query is valid, it will go to the final_answer node.
     If the SQL3 query is invalid, it will go to the modify_sql3 node.
     """
+    writer({"process": "executing 3rd SQL"})
     goto_node = "final_answer"
     if state.get("modify_sql3") is None:
         res_sql3 : dict[str, str|None] = execute_sql_query(sql_query=state.get("gen_sql3"))
@@ -260,6 +272,7 @@ def judge_sql3(state: BodyState) -> Command[Literal["modify_sql3", "final_answer
         if res_sql3["result"] is None:
             goto_node = "modify_sql3"
     else:
+        writer({"routing": "to modify 3rd SQL."})
         res_modify_sql3 : dict[str, str|None] = execute_sql_query(sql_query=state.get("modify_sql3"))
 
         body_state_to_update = {
@@ -281,7 +294,8 @@ def judge_sql3(state: BodyState) -> Command[Literal["modify_sql3", "final_answer
     )
 
 
-def modify_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
+def modify_sql3(state: BodyState, writer: StreamWriter) -> Command[Literal["rout_sql3"]]:
+    writer({"process": "modifying 3rd SQL"})
     body_state_to_update = {}
     # TODO : extract sql history here
     sql_conv_hist : list = state.get("messages")[-3:] if len(state.get("messages")) > 3 else state.get("messages")
@@ -290,15 +304,19 @@ def modify_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
     body_state_to_update["max_retires_remaining"] = max_retires_remaining - 1 if max_retires_remaining > 0 else 0
 
     to_modify: str = "modify_sql3"
+    to_modify_res: str = "res_modify_sql3"
     if state.get("modify_sql3") is None:
         to_modify: str = "gen_sql3"
+        to_modify_res: str = "res_sql3"
 
     sql_to_modify: str = state.get(to_modify)  # noqa
 
+    res_dict = state.get(to_modify_res)
+    result = res_dict["result"] if res_dict is not None else None
 
     modified_sql3 = loop_sql3_on_remaining_tries(
         sql_to_modify = sql_to_modify,
-        res_sql3=state.get(to_modify)["result"],
+        res_sql3=result,
         dense_schema=state.get("dense_schema"),
         hints=state.get("hints"),
         user_question=HumanMessage(content=state.get("data_query")),
@@ -311,8 +329,13 @@ def modify_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
         goto="rout_sql3"
     )
 
-def final_answer(state: BodyState) -> Command[Literal["__end__"]]:
+def final_answer(state: BodyState, writer: StreamWriter) -> Command[Literal["__end__"]]:
     """Reset all the state here."""
+    max_retries = state.get("max_retires_remaining")
+    if max_retries == 0:
+        writer({"error": "couldn't create SQL that can execute SORRY !!!"})
+    else:
+        writer({"process": "Task performed, generating final answer."})
     body_state_to_update = {
         "max_retires_remaining" : 3
     }
@@ -335,40 +358,40 @@ tail_state_to_update = {
     "feedback_messsage" : "dummy feedback message"
 }
 
-def feedback_router(state: TailState) -> Command[Literal["feedback_node", "__end__"]]:
+def feedback_router(state: TailState, writer: StreamWriter) -> Command[Literal["feedback_node", "__end__"]]:
     # print("inside tail")
     return Command(
         update=tail_state_to_update,
         goto="feedback_node"
     )
 
-def feedback_node(state: TailState) -> Command[Literal["positive", "negative"]]:
+def feedback_node(state: TailState, writer: StreamWriter) -> Command[Literal["positive", "negative"]]:
     return Command(
         update=tail_state_to_update,
         goto="positive"
     )
-def positive(state: TailState) -> Command[Literal["verify_feedback"]]:
+def positive(state: TailState, writer: StreamWriter) -> Command[Literal["verify_feedback"]]:
     return Command(
         update=tail_state_to_update,
         goto="verify_feedback"
     )
-def negative(state: TailState) -> Command[Literal["send_to_dev_to_tune_approach"]]:
+def negative(state: TailState, writer: StreamWriter) -> Command[Literal["send_to_dev_to_tune_approach"]]:
     return Command(
         update=tail_state_to_update,
         goto="send_to_dev_to_tune_approach"
     )
 
-def verify_feedback(state: TailState) -> Command[Literal["store_in_rag"]]:
+def verify_feedback(state: TailState, writer: StreamWriter) -> Command[Literal["store_in_rag"]]:
     return Command(
         update=tail_state_to_update,
         goto="store_in_rag"
     )
-def send_to_dev_to_tune_approach(state: TailState) -> Command[Literal["__end__"]]:
+def send_to_dev_to_tune_approach(state: TailState, writer: StreamWriter) -> Command[Literal["__end__"]]:
     return Command(
         update=tail_state_to_update,
         goto="__end__"
     )
-def store_in_rag(state: TailState) -> Command[Literal["__end__"]]:
+def store_in_rag(state: TailState, writer: StreamWriter) -> Command[Literal["__end__"]]:
     return Command(
         update=tail_state_to_update,
         goto="__end__"
