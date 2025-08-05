@@ -25,8 +25,11 @@ Both SQL1 and SQL2 queries tries to answer the user question,
 #### SQL2 Result: 
 {res_sql2}
 
-#### Dense Schema: 
+#### Here is the schema that you should focus on to answer the user query:
 {dense_schema}
+
+#Here are some query specific instruction that will be helpful to generate the sql:
+{instruction}\n
 
 #### Hints: 
 here is what each hint means:
@@ -38,6 +41,14 @@ here is what each hint means:
 
 #### User Question : 
 {query}
+
+If the user query is not related to the schema, return 'None' as the sql query.
+
+#Here are some other information that you should consider while generating the sql query:
+{other_info}\n
+
+# Few examples :
+{examples}
 """
 
-sq3_input_variables = ["sql1", "res_sql1", "sql2", "res_sql2", "dense_schema", "hints", "query"]
+sq3_input_variables = ["sql1", "res_sql1", "sql2", "res_sql2", "dense_schema", "instruction", "hints", "query", "other_info", "examples"]

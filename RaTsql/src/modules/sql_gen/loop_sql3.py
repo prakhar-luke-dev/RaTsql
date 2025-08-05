@@ -70,18 +70,21 @@ def loop_sql3_on_remaining_tries(
     llm_client = get_chat_model()
     if llm_client is not None:
         sql_validity = loop_sql3(
-            llm_client=llm_client, sql3=sql_to_modify, res_sql3=res_sql3, dense_schema=dense_schema, hints=hints, user_question=user_question,
+            llm_client=llm_client,
+            sql3=sql_to_modify, res_sql3=res_sql3,
+            dense_schema=dense_schema, hints=hints,
+            user_question=user_question,
             sql_conversation_history=sql_conversation_history
         )
         if ("invalid" in sql_validity) and ("sql" in sql_validity):
             if isinstance(sql_validity['invalid'], bool):
                 if not sql_validity["invalid"]:
-                    sql1 = sql_validity["sql"]
-                    return sql1
+                    sqlx = sql_validity["sql"]
+                    return sqlx
             elif isinstance(sql_validity['invalid'], str):  # incase LLM hallucinates and returns a string instead of bool.
                 if (sql_validity['invalid']).lower() == "false":
-                    sql1 = sql_validity["sql"]
-                    return sql1
+                    sqlx = sql_validity["sql"]
+                    return sqlx
             else:
                 raise ValueError("No sql found , it's invalid or not generated (question might not be related to the schema).")
 

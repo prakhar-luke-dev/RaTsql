@@ -11,7 +11,7 @@ from typing import Literal
 from langchain_core.messages import HumanMessage
 from langgraph.types import Command
 
-from config import DEEPINFRA_API_TOKEN
+from config import DEEPINFRA_API_TOKEN, dummy_other_info
 from modules.prepare_data.prepare_metadata import extract_table_column_map
 from modules.sql_gen.hint_gen import generate_hints_for_sql2
 from modules.sql_gen.loop_sql3 import loop_sql3_on_remaining_tries
@@ -22,7 +22,7 @@ from modules.vector_store.embed_model import get_deepinfra_embedding_model
 from modules.vector_store.milvus_client import get_milvus_vector_store
 from modules.vector_store.query_vector_store import get_similar_queries
 from states import HeadState, BodyState, TailState
-from utils import get_pruned_schema, union_schemas, execute_sql_query
+from utils import get_pruned_schema, union_schemas, execute_sql_query, create_dynamic_prompt
 
 
 #===========================================================================
@@ -31,9 +31,10 @@ from utils import get_pruned_schema, union_schemas, execute_sql_query
 
 
 def user_question(state: HeadState) -> Command[Literal["rag_node"]]:
-    print("inside head")
-    # Setting up the similarity threshold
-    head_state_to_update = {'similarity_threshold': 0.40}
+    # print("inside head")
+    head_state_to_update = {
+        'similarity_threshold': 0.40,
+    }
     # set up the threshold and other state variables
     return Command(
         update=head_state_to_update,
@@ -117,28 +118,18 @@ def get_pruned_schema_from_full_approach(state: HeadState) -> Command[Literal["_
 #===========================================================================
 
 def gen_sql1(state: BodyState) -> Command[Literal["get_schema_from_sql", "gen_sql3"]]:
-    print("inside body")
+    # print("inside body")
     from utils import get_full_schema
     full_schema_json = get_full_schema()
     pruned_schema_json = state.get("pruned_schema")
-    dummy_other_info = """The provided schema is in the following format:
-    {
-        'table_name': {
-            'column_name_1' : 'datatype OR comma-separated enumerated values',
-            'column_name_2' : 'datatype OR comma-separated enumerated values',
-            ...
-        },
-        ...
-    }"""
-    # Dummy instructions for the SQL generation for now empty, add accordingly.
-    dummy_instructions = """
-    """
+
     sql1_output = generate_sql1(
-        full_schema=json.dumps(full_schema_json, indent=2),
-        pruned_schema=json.dumps(pruned_schema_json, indent=2),
+        full_schema=full_schema_json,
+        pruned_schema=pruned_schema_json,
         user_question=HumanMessage(state.get("data_query")),
-        other_info=dummy_other_info,
-        instructions=dummy_instructions,
+        other_info=dummy_other_info.format(customer_id=state.get("customer_id")),
+        instructions=create_dynamic_prompt(similar_data_query=state.get("similar_data_query"), want_instructions=True),
+        examples = create_dynamic_prompt(similar_data_query=state.get("similar_data_query"), want_few_shots=True)
     )
 
     body_state_to_update = {"gen_sql1": sql1_output}
@@ -171,7 +162,7 @@ def gen_hints(state: BodyState) -> Command[Literal["gen_sql2"]]:
     hints = generate_hints_for_sql2(
         dense_schema=state.get("dense_schema"),
         data_query=state.get("data_query"),
-        other_info=""
+        other_info=dummy_other_info.format(customer_id=state.get("customer_id"))
     )
     body_state_to_update = {"hints": hints}
     return Command(
@@ -184,7 +175,9 @@ def gen_sql2(state: BodyState) -> Command[Literal["execute_2sql"]]:
         dense_schema=state.get("dense_schema"),
         hints=state.get("hints"),
         user_question=HumanMessage(content=state.get("data_query")),
-        other_info=""
+        other_info=dummy_other_info.format(customer_id=state.get("customer_id")),
+        instructions=create_dynamic_prompt(similar_data_query=state.get("similar_data_query"), want_instructions=True),
+        examples=create_dynamic_prompt(similar_data_query=state.get("similar_data_query"), want_few_shots=True)
     )
     body_state_to_update = {"gen_sql2": sql2_output}
     return Command(
@@ -193,11 +186,24 @@ def gen_sql2(state: BodyState) -> Command[Literal["execute_2sql"]]:
     )
 
 def get_result_from_both_queries(state: BodyState) -> Command[Literal["gen_sql3"]]:
-    # TODO : get result of both queries here
+    # TODO : Pass the error message and create logic for it
+    gen_sql1 = state.get("gen_sql1")
+    gen_sql2 = state.get("gen_sql2")
+
+    result1 = execute_sql_query(sql_query=gen_sql1)
+    result2 = execute_sql_query(sql_query=gen_sql2)
+
     body_state_to_update = {
-        "res_sql1" : execute_sql_query(sql_query=state.get("gen_sql1"))["result"],
-        "res_sql2" : execute_sql_query(sql_query=state.get("gen_sql2"))["result"]
+        "res_sql1": {
+            "result" : result1.get("result"),
+            "error" : result1.get("error")
+        },
+        "res_sql2": {
+            "result" : result2.get("result"),
+            "error" : result2.get("error")
+        }
     }
+
     return Command(
         update=body_state_to_update,
         goto="gen_sql3"
@@ -212,8 +218,11 @@ def gen_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
         res_sql2 = state.get("res_sql2"),
         dense_schema = state.get("dense_schema"),
         hints = state.get("hints"),
-        user_question = HumanMessage(content=state.get("data_query"))
-        )
+        user_question = HumanMessage(content=state.get("data_query")),
+        other_info=dummy_other_info.format(customer_id=state.get("customer_id")),
+        instructions=create_dynamic_prompt(similar_data_query=state.get("similar_data_query"), want_instructions=True),
+        examples=create_dynamic_prompt(similar_data_query=state.get("similar_data_query"), want_few_shots=True)
+    )
     body_state_to_update = {
         "gen_sql3" : sql3_output,
         "modify_sql3" : None
@@ -231,19 +240,32 @@ def judge_sql3(state: BodyState) -> Command[Literal["modify_sql3", "final_answer
     """
     goto_node = "final_answer"
     body_state_to_update = {}
+    max_try = state.get("max_retires_remaining")
+    if max_try is None:
+        body_state_to_update = {"max_retires_remaining": 3}
     if state.get("modify_sql3") is None:
-        res_sql3 : str|None = execute_sql_query(sql_query=state.get("gen_sql3"))["result"]
+        res_sql3 : dict[str, str|None] = execute_sql_query(sql_query=state.get("gen_sql3"))
         # TODO : to trigger error message uncomment below code
         # res_sql3 = None
-        body_state_to_update["res_sql3"] = res_sql3
-        if res_sql3 is None:
+        body_state_to_update= {
+            "res_sql3" : {
+                "result": res_sql3.get("result"),
+                "error": res_sql3.get("error")
+            }
+        }
+        if res_sql3["result"] is None:
             goto_node = "modify_sql3"
     else:
-        res_modify_sql3 : str|None = execute_sql_query(sql_query=state.get("modify_sql3"))["result"]
-        # TODO : to trigger error message uncomment below code
-        # res_modify_sql3 = None
-        body_state_to_update["res_modify_sql3"] = res_modify_sql3
-        if res_modify_sql3 is None:
+        res_modify_sql3 : dict[str, str|None] = execute_sql_query(sql_query=state.get("modify_sql3"))
+        # TODO : Pass the error message and create logic for it
+
+        body_state_to_update = {
+            "res_modify_sql3" : {
+                "result": res_modify_sql3.get("result"),
+                "error": res_modify_sql3.get("error")
+            }
+        }
+        if res_modify_sql3["error"] is not None:  # i.e. Error in sql query so need to modify it
             goto_node = "modify_sql3"
             max_retires_remaining = int(state.get("max_retires_remaining"))
             if max_retires_remaining == 0:
@@ -264,14 +286,16 @@ def modify_sql3(state: BodyState) -> Command[Literal["rout_sql3"]]:
     max_retires_remaining = int(state.get("max_retires_remaining"))
     body_state_to_update["max_retires_remaining"] = max_retires_remaining - 1 if max_retires_remaining > 0 else 0
 
+    to_modify: str = "modify_sql3"
     if state.get("modify_sql3") is None:
-        sql_to_modify = state.get("gen_sql3")
-    else:
-        sql_to_modify = state.get("modify_sql3")
+        to_modify: str = "gen_sql3"
+
+    sql_to_modify: str = state.get(to_modify)  # noqa
+
 
     modified_sql3 = loop_sql3_on_remaining_tries(
         sql_to_modify = sql_to_modify,
-        res_sql3=state.get("res_sql3"),
+        res_sql3=state.get(to_modify)["result"],
         dense_schema=state.get("dense_schema"),
         hints=state.get("hints"),
         user_question=HumanMessage(content=state.get("data_query")),
@@ -309,7 +333,7 @@ tail_state_to_update = {
 }
 
 def feedback_router(state: TailState) -> Command[Literal["feedback_node", "__end__"]]:
-    print("inside tail")
+    # print("inside tail")
     return Command(
         update=tail_state_to_update,
         goto="feedback_node"

@@ -14,13 +14,14 @@ from modules.custom_tools.sql_tools import SQLGenerator
 from modules.prompts.sql1_prompts import SYSTEM_PROMPT_SQL1
 
 
-def generate_structured_sql(llm_client: ChatOpenAI, full_schema: json, pruned_schema: json, user_question: HumanMessage, instructions: str, other_info: str) -> dict[str, bool]:
+def generate_structured_sql(llm_client: ChatOpenAI, full_schema: json, pruned_schema: json, user_question: HumanMessage, instructions: str, other_info: str, examples: str) -> dict[str, bool]:
     sys_message_content = SYSTEM_PROMPT_SQL1.format(
         query = user_question.content,
         full_schema = json.dumps(full_schema, indent=2),
         pruned_schema = json.dumps(pruned_schema, indent=2),
         instruction = instructions,
-        other_info = other_info
+        other_info = other_info,
+        examples = examples
     )
     system_message = SystemMessage(content=sys_message_content)
     llm_with_tools = llm_client.bind_tools([SQLGenerator])
@@ -37,7 +38,7 @@ def generate_structured_sql(llm_client: ChatOpenAI, full_schema: json, pruned_sc
     return parsed
 
 
-def generate_sql1(full_schema: json, pruned_schema: json, user_question: HumanMessage, other_info: str, instructions: str):
+def generate_sql1(full_schema: json, pruned_schema: json, user_question: HumanMessage, other_info: str, instructions: str, examples: str):
     """
     Generate SQL1 based on the full schema and pruned schema, user question, and other relevant information.
     :return:
@@ -52,7 +53,8 @@ def generate_sql1(full_schema: json, pruned_schema: json, user_question: HumanMe
             pruned_schema=pruned_schema,
             user_question=user_question,
             instructions=instructions,
-            other_info=other_info
+            other_info=other_info,
+            examples = examples
         )
         if ("invalid" in sql_validity) and ("sql" in sql_validity):
             if isinstance(sql_validity['invalid'], bool):

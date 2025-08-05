@@ -31,7 +31,7 @@ ratsql = get_global_graph()
 user_config = {
     "configurable": {"thread_id": "saint_luke"},
     "callbacks": [langfuse_handler],
-    "session_id": "preach04",
+    "session_id": "preach_anmolSir",
     "user_id": "luke",
 }
 # Set trace attributes dynamically via enclosing span
@@ -40,14 +40,17 @@ with langfuse.start_as_current_span(
 ) as span:
     span.update_trace(
         user_id="saint_luke",
-        session_id="preach04",
-        tags=["preaching"],
+        session_id="preach_anmolSir",
+        tags=["preaching", "bq", "results"],
     )
-    ratsql.invoke(
+    Ratsql_response = ratsql.invoke(
             {
                 "messages": [("user", "hi testing")],
-                "data_query": "Which campaign had the maximum impressions on 1 jan 2025?",
+                "data_query": "What are the campaigns with ROAS in the top 5% over the past 14 days, and how has it changed compared to the previous week?",
+                "customer_id": "1396334731",
+                "max_retires_remaining": 3,
             },
             config=user_config
     )
+    print(f"ANSWER FROM RaT2sql : \n{Ratsql_response}")
 

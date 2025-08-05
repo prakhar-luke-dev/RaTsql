@@ -9,6 +9,10 @@ Answer the user query based on given schema :
 Here is the dense schema of the database:
 {dense_schema}.\n
 
+#Here are some query specific instruction that will be helpful to generate the sql:
+{instruction}\n
+
+
 Below are the hints in order to generate the SQL query:
 {hints}\n
 here is what each hint means:
@@ -16,13 +20,17 @@ here is what each hint means:
 - elements list: a list of tables and columns likely needed in the SQL query.
 - keywords list: SQL keywords that may be relevant to the user's question.
 
-
+# User Query : 
 {query}\n"
 
 If the user query is not related to the schema, return 'None' as the sql query.
-Here are some other information that you should consider while generating the sql query:
+
+#Here are some other information that you should consider while generating the sql query:
 {other_info}\n
+
+# Few examples :
+{examples}
 
 """
 
-sq2_input_variables = ["query", "dense_schema", "hints", "other_info"]
+sq2_input_variables = ["query", "dense_schema", "hints", "other_info", "instruction", "examples"]

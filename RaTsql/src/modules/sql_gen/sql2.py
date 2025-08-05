@@ -11,7 +11,7 @@ from modules.custom_tools.sql_tools import SQLGenerator
 from modules.prompts.sql2_prompts import SYSTEM_PROMPT_SQL2
 
 
-def generate_structured_sql2(llm_client: ChatOpenAI, dense_schema: str|dict, hints: dict, user_question: HumanMessage, other_info: str):
+def generate_structured_sql2(llm_client: ChatOpenAI, dense_schema: str|dict, hints: dict, user_question: HumanMessage, instructions: str, other_info: str, examples: str):
     """
     Generate SQL2 based on the dense schema, hints, user question, and other relevant information.
     :param llm_client: The LLM client to use for generating SQL2.
@@ -25,7 +25,9 @@ def generate_structured_sql2(llm_client: ChatOpenAI, dense_schema: str|dict, hin
         query=user_question,
         dense_schema=dense_schema,
         hints=hints,
-        other_info=other_info
+        other_info=other_info,
+        instruction=instructions,
+        examples=examples
     )
     system_message = SystemMessage(content=sys_message_content)
     llm_with_tools = llm_client.bind_tools([SQLGenerator])
@@ -39,7 +41,7 @@ def generate_structured_sql2(llm_client: ChatOpenAI, dense_schema: str|dict, hin
         raise ValueError(f"❌ No tool output found in response: {response}")
     return parsed
 
-def generate_sql2(dense_schema: str|dict, hints: dict, user_question: HumanMessage, other_info:str):
+def generate_sql2(dense_schema: str|dict, hints: dict, user_question: HumanMessage, other_info:str, instructions: str, examples: str):
     """
     Generate SQL2 based on the dense schema, hints, user question, and other relevant information.
     :param: dense_schema: The dense schema in string or dictionary format.
@@ -55,7 +57,9 @@ def generate_sql2(dense_schema: str|dict, hints: dict, user_question: HumanMessa
             dense_schema=dense_schema,
             hints=hints,
             user_question=user_question,
-            other_info=other_info
+            instructions=instructions,
+            other_info=other_info,
+            examples=examples,
         )
         if ("invalid" in sql2_validity) and ("sql" in sql2_validity):
             if isinstance(sql2_validity['invalid'], bool):

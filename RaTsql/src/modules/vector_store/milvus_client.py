@@ -8,9 +8,9 @@ from langchain_milvus import Milvus
 
 def get_milvus_vector_store(
         embedding_model,
-        MILVUS_DB_NAME="milvus_rag_demo",
-        MILVUS_COLLECTION_NAME = "Rag_Demo",
-        MILVUS_COLLECTION_NAME_DESCRIPTION = "Demo collection for RAG with Milvus"
+        MILVUS_DB_NAME="milvus_ratsql_demo",
+        MILVUS_COLLECTION_NAME = "ratsql_demo",
+        MILVUS_COLLECTION_NAME_DESCRIPTION = "Demo collection for ratsql with Milvus"
         ):
     MILVUS_URI = f"/home/prakhar/luke-dev/txt2sql_methods/RaTsql/data/{MILVUS_DB_NAME}.db"
     # Milvus Vector Store

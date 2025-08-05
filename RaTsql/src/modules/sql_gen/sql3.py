@@ -19,9 +19,15 @@ def generate_structured_sql(
         res_sql2: str,
         dense_schema: str|dict,
         hints: str|dict,
-        user_question: HumanMessage) -> dict[str, bool]:
+        user_question: HumanMessage,
+        instructions: str,
+        other_info: str,
+        examples: str
+) -> dict[str, bool]:
     sys_message_content = SYSTEM_PROMPT_SQL3.format(
-        sql1=sql1, sql2=sql2, res_sql1=res_sql1, res_sql2=res_sql2, dense_schema=dense_schema, hints=hints, query=user_question.content
+        sql1=sql1, sql2=sql2, res_sql1=res_sql1, res_sql2=res_sql2,
+        dense_schema=dense_schema, hints=hints, query=user_question.content,
+        instruction=instructions, other_info=other_info, examples=examples
     )
     system_message = SystemMessage(content=sys_message_content)
     llm_with_tools = llm_client.bind_tools([SQLGenerator])
@@ -41,17 +47,25 @@ def generate_structured_sql(
 def generate_sql3(
         sql1: str,
         sql2: str,
-        res_sql1: str,
-        res_sql2: str,
+        res_sql1: dict,
+        res_sql2: dict,
         dense_schema: str|dict,
         hints: str|dict,
-        user_question: HumanMessage):
+        user_question: HumanMessage,
+        instructions: str,
+        other_info: str,
+        examples: str
+):
     """
     Generate SQL3 based SQL1, SQL2, their results, schema, user question, and other relevant information.
     :return:
     """
     llm_client = get_chat_model()
     if llm_client is not None:
+        if res_sql1["error"] is None:
+            res_sql1 = res_sql1["result"]
+        if res_sql2["error"] is None:
+            res_sql2 = res_sql2["result"]
         sql_validity = generate_structured_sql(
             llm_client=llm_client,
             sql1=sql1,
@@ -60,7 +74,10 @@ def generate_sql3(
             res_sql2=res_sql2,
             dense_schema=dense_schema,
             hints=hints,
-            user_question=user_question
+            user_question=user_question,
+            instructions=instructions,
+            other_info=other_info,
+            examples=examples
         )
         if ("invalid" in sql_validity) and ("sql" in sql_validity):
             if isinstance(sql_validity['invalid'], bool):

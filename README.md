@@ -1,4 +1,10 @@
-txt2sql_methods
+# Retrieval-augmented Text-to-SQL
+
+R: Retrieval
+
+a: augmented
+
+Tsql: Text-to-SQL
 
 # SETUP : 
 
